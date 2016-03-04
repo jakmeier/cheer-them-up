@@ -1,0 +1,7 @@
+target
+Cargo.lock
+*.exe
+img/png_big/
+img/svg/
+img/pdn/
+versions/

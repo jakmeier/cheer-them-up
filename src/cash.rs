@@ -73,6 +73,25 @@ impl CashHeader{
 		}
 	}
 
+	///pays the given amount of resources if available, otherwise does nothing and returns false
+	pub fn test_and_pay(&mut self, res: [u32;4]) ->  bool {
+		if self.coins >= res[0] && self.wood >= res[1] && self.iron >= res[2] && self.crystals >= res[3] {
+			self.coins -= res[0];
+			self.wood -= res[1];
+			self.iron -= res[2];
+			self.crystals -= res[3];
+			true
+		}
+		else { false }
+	}
+	
+	pub fn add_resources (&mut self, res: [u32;4]){
+		self.coins += res[0];
+		self.wood += res[1];
+		self.iron += res[2];
+		self.crystals += res[3];
+	}
+	
 	pub fn add_coins(&mut self, a: u32){
 		self.coins += a;
 	}
@@ -118,15 +137,18 @@ impl CashHeader{
 	}
 
 	/// Draws the given price to the given location.
+	/// Font turns red when there are not enough resources
 	pub fn draw_resource_price (&mut self, g: &mut GfxGraphics<Resources, CommandBuffer>, view: math::Matrix2d, draw_state: DrawState, res: [u32;4],font_size: u32) {
 		let mut x  = 0.0;
-		//let mut color = [1.0,1.0, 1.0, 1.0];
+		let mut color :[f32;4];
 		let sprites = [&self.coins_sprite, &self.wood_sprite, &self.iron_sprite, &self.crystal_sprite ];
-		
+		let enough = [self.coins >= res[0], self.wood >= res[1], self.iron >= res[2], self.crystals >= res[3]];
 		
 		for i in 0..4 {
 			if res[i] > 0 {
-				text::Text::new_color([1.0,1.0, 1.0, 1.0], font_size as u32).draw( &(res[i].to_string()), &mut self.font, &draw_state, view.trans(x, 0.0 ), g);
+				if enough[i] { color =  [1.0, 1.0, 1.0, 1.0];}
+				else { color = [1.0, 0.0, 0.0, 1.0]; }
+				text::Text::new_color(color, font_size as u32).draw( &(res[i].to_string()), &mut self.font, &draw_state, view.trans(x, 0.0 ), g);
 				x += font_size as f64;
 				
 				let (sprite_w, sprite_h) = (*sprites[i]).get_size();

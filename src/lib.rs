@@ -15,14 +15,16 @@ extern crate find_folder;
 extern crate freetype;
 extern crate rand;
 
-use micro::{PersistentWinnerState, AbsolutelyChangeableState, AI};
+use micro::{PersistentWinnerState, AbsolutelyChangeableState, AI, ClickableGame};
 use map::MapUserInteraction;
 use piston_window::*;
 
-pub const CONCRETE_PRICE: u32 = 3;
-pub const IRON_FACTORY_PRICE: u32 = 5;
-pub const IRON_FACTORY_UPGRADE_PRICE: u32 = 1;
+pub const CONCRETE_PRICE: [u32;4] = [0,0,3,0];
+pub const IRON_FACTORY_PRICE: [u32;4] = [0,10,5,0];
+pub const IRON_FACTORY_UPGRADE_PRICE: [u32;4] = [1,0,1,0];
+pub const UNIVERSITY_PRICE: [u32;4] = [5,5,5,5];
 
+/// Message used when a module needs to draw something and it lacks information from another module.
 pub enum DrawRequest{
 	ResourcePrice{price: [u32;4], coordinates: math::Matrix2d, font_size:u32},
 }
@@ -42,9 +44,12 @@ pub trait Drawable {
 /// Root structure for the game. It contains all the mini games (micro) as well as the higher level game parts (macro) and connects them.
 pub struct Game {
 		screen_width: f64, screen_height: f64,
+		header_height: f64,
+		game_split_coordinates: [f64;2],
 		mouse_x: f64, mouse_y: f64, 
-		map: map::Map, map_coordinates: [f64; 4],
+		map: map::Map, 
 		mini_game: micro::rock_paper_scissors::GameObj,
+		game_two: micro::tic_tac_toe::TicTacToeData,
 		clock: f64,
 		coin_paid: bool,
 		cash: cash::CashHeader,
@@ -56,14 +61,17 @@ pub struct Game {
 			let screen_width = w.size().width as f64;
 			let screen_height = w.size().height as f64;
 			let header_height = screen_height * 0.05;
-			let game_height = screen_height - header_height;
-			let x_seperation = screen_width * 0.6;
+			let map_height = screen_height * 0.55;
+			let x_seperation = screen_width * 0.7;
 			
 			Game{	
 				screen_width: screen_width,	screen_height: screen_height,
+				header_height: header_height,
+				game_split_coordinates : [x_seperation, header_height + map_height],
 				mouse_x: 0.0, mouse_y: 0.0, 
-				map: map::Map::new(w, 7, 10), map_coordinates: [x_seperation, header_height, screen_width - x_seperation, game_height],
+				map: map::Map::new(w, 15, 5),
 				mini_game: micro::rock_paper_scissors::GameObj::new(w),
+				game_two: micro::tic_tac_toe::TicTacToeData::new(w, [0, 0, 1, 0], [0, 0, 0, 1]),
 				clock: 0.0,
 				coin_paid: false,
 				cash: cash::CashHeader::new(w),
@@ -74,7 +82,7 @@ pub struct Game {
 			let mini_game_one_timer = 4-(self.clock as u8 % 5);
 			self.mini_game.set_time(mini_game_one_timer);
 			if mini_game_one_timer == 0 {
-				if self.coin_paid {self.mini_game.make_turn(); } //ai
+				if self.coin_paid {self.mini_game.make_ai_turn(); } //ai
 				self.mini_game.lock_input(true);
 				if self.coin_paid {self.mini_game.save_turn();} //ai
 				self.coin_paid = false;
@@ -91,20 +99,22 @@ pub struct Game {
 			self.cash.add_wood(resources_produced[1]);
 			self.cash.add_iron(resources_produced[2]);
 			self.cash.add_crystals(resources_produced[3]);
+			self.game_two.on_update(upd.dt);
 		}
-		#[allow(unused_variables)]
+		#[allow(unused_variables)] //ren
 		pub fn on_draw(&mut self, ren:RenderArgs, e: PistonWindow){
 			e.draw_2d(|c,g| {
 				clear([1.0, 1.0, 1.0, 1.0], g);				
-				self.cash.draw(g, c.transform, c.draw_state, self.screen_width, self.map_coordinates[1], [self.mouse_x, self.mouse_y]);
-				self.mini_game.draw(g, c.transform.trans(0.0, self.map_coordinates[1]), c.draw_state, self.map_coordinates[0], self.map_coordinates[3], [self.mouse_x, self.mouse_y-self.map_coordinates[1]]);
-				match self.map.draw(g, c.transform.trans(self.map_coordinates[0], self.map_coordinates[1]), c.draw_state, self.map_coordinates[2], self.map_coordinates[3], [self.mouse_x - self.map_coordinates[0], self.mouse_y-self.map_coordinates[1]])
+				self.cash.draw(g, c.transform, c.draw_state, self.screen_width, self.header_height, [self.mouse_x, self.mouse_y]);
+				match self.map.draw(g, c.transform.trans(0.0, self.header_height), c.draw_state, self.screen_width, self.game_split_coordinates[1]-self.header_height, [self.mouse_x, self.mouse_y-self.header_height])
 				{
 					Some(DrawRequest::ResourcePrice{price, coordinates, font_size}) => {
 						self.cash.draw_resource_price(g, coordinates, c.draw_state, price, font_size);
 					}
 					None => {}
 				}
+				self.mini_game.draw(g, c.transform.trans(0.0, self.game_split_coordinates[1]), c.draw_state, self.game_split_coordinates[0], self.screen_height - self.game_split_coordinates[1], [self.mouse_x, self.mouse_y-self.game_split_coordinates[1]]);
+				self.game_two.draw(g, c.transform.trans(self.game_split_coordinates[0], self.game_split_coordinates[1]), c.draw_state, self.screen_width - self.game_split_coordinates[0], self.screen_height - self.game_split_coordinates[1], [self.mouse_x - self.game_split_coordinates[0], self.mouse_y - self.game_split_coordinates[1]]);
 			});
 		}
 		pub fn on_input(&mut self, inp: Input){
@@ -140,10 +150,12 @@ pub struct Game {
 				Input::Release(but) => {
 					match but {
 						Button::Mouse(MouseButton::Left) => {
-								match self.map.on_click(self.mouse_x - self.map_coordinates[0], self.mouse_y - self.map_coordinates[1]){
+								match self.map.on_click(self.mouse_x, self.mouse_y - self.header_height){
 									Some(msg) => { self.handle_map_interaction(msg) }
 									None => {}
 								}
+								if let Some(reward) = self.game_two.click(self.mouse_x - self.game_split_coordinates[0], self.mouse_y - self.game_split_coordinates[1])
+								{self.cash.add_resources(reward);}
 						}
 						_ => {}
 					}
@@ -165,20 +177,25 @@ pub struct Game {
 					}
 				}
 				MapUserInteraction::ConcreteLand{index} => {
-					if self.cash.take_iron(CONCRETE_PRICE){
+					if self.cash.test_and_pay(CONCRETE_PRICE){
 						self.map.concrete_land(index);
 					}
 				}
 				MapUserInteraction::BuildIronFactory{index} => {
-					if self.cash.take_iron(IRON_FACTORY_PRICE){
+					if self.cash.test_and_pay(IRON_FACTORY_PRICE){
 						if !self.map.build_iron_factory_on_land(index) {
 							//not concreted yet
-							self.cash.add_iron(IRON_FACTORY_PRICE);
+							self.cash.add_resources(IRON_FACTORY_PRICE);
 						}
 					}
 				}
+				MapUserInteraction::BuildUniversity{index} => {
+					if self.cash.test_and_pay(UNIVERSITY_PRICE){
+						self.map.build_university(index);	
+					}
+				}
 				MapUserInteraction::UpgradeIronFactory{index} => {
-					if self.cash.take_iron(IRON_FACTORY_UPGRADE_PRICE){
+					if self.cash.test_and_pay(IRON_FACTORY_UPGRADE_PRICE){
 						self.map.upgrade_iron_factory(index);
 					}
 				}

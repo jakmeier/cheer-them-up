@@ -228,7 +228,7 @@ impl AI for GameObj {
 	fn activate_ai(&mut self, b: bool) { 
 		self.ai_activated = b;
 	}
-	fn make_turn(&mut self) {
+	fn make_ai_turn(&mut self) {
 		self.state_p2 = self.ai.new_turn();
 	}
 	fn save_turn(&mut self){

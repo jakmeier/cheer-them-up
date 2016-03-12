@@ -21,9 +21,9 @@ use rand;
 // used for initialization of the land sizes, but it should be overwritten before drawing anyway
 const STD_SIZE: f64 = 100.0;
 /// Used by the land module to borrow the sprite array
-pub const LAND_SPRITES_COUNT: usize = 14;
+pub const LAND_SPRITES_COUNT: usize = 15;
 /// Used by the land module to borrow the sprite array
-pub const BUTTON_SPRITES_COUNT: usize = 6;
+pub const BUTTON_SPRITES_COUNT: usize = 7;
 
 /// Used to get messages from a land through the map up to the root of the project.
 pub enum MapUserInteraction{
@@ -33,6 +33,7 @@ pub enum MapUserInteraction{
 	BuildIronFactory{index: u32},
 	UpgradeIronFactory{index: u32},
 	AddResources{coins: u32, wood: u32, iron: u32, crystals: u32},
+	BuildUniversity {index: u32},
 }
 
 /// The main data structure for the map.
@@ -178,8 +179,17 @@ impl Map{
 		)
         .unwrap();
 		
+		let folder = img.join("bremen.png");
+		let bremen = Texture::from_path(
+			&mut *w.factory.borrow_mut(),
+			&folder,
+			Flip::None,
+			&TextureSettings::new()
+		)
+        .unwrap();
+		
 		let land_sprite_array = [grass, tree_a_0, tree_a_1, tree_a_2, tree_a_3, tree_b_0, tree_b_1, tree_b_2, tree_b_3, industry, 
-								add_coins, add_wood, add_iron, add_crystal];
+								add_coins, add_wood, add_iron, add_crystal, bremen];
 		
 		/*		Button Sprites
 		
@@ -240,7 +250,16 @@ impl Map{
 		)
         .unwrap();
 		
-		let button_sprite_array = [buy, sell, concrete, build_iron_factory, axe, upgrade];
+		let folder = img.join("cap.png");
+		let cap = Texture::from_path(
+			&mut *w.factory.borrow_mut(),
+			&folder,
+			Flip::None,
+			&TextureSettings::new()
+		)
+        .unwrap();
+		
+		let button_sprite_array = [buy, sell, concrete, build_iron_factory, axe, upgrade, cap];
 		
 		// Font
 		
@@ -279,6 +298,7 @@ impl Map{
 		[0,0,iron_produced,0]
 	}
 	/// Checks if the current click was on clickable object in the map. 
+	/// Coordinates are relative to the map.
 	/// Can return a MapUserInteraction to interact with the root of the game.
 	pub fn on_click(&mut self, x: f64, y: f64) -> Option<MapUserInteraction> {
 		//check if the click is on a currently shown button_sprite_array
@@ -291,6 +311,7 @@ impl Map{
 					Some(MapUserInteraction::BuildIronFactory{..}) => {return Some(MapUserInteraction::BuildIronFactory{index:((i as usize * self.cols + j)as u32)}); }
 					Some(MapUserInteraction::UpgradeIronFactory{..}) => {return Some(MapUserInteraction::UpgradeIronFactory{index:((i as usize * self.cols + j)as u32)}); }
 					Some(MapUserInteraction::AddResources{coins, wood, iron, crystals}) => {return Some(MapUserInteraction::AddResources{coins:coins, wood:wood, iron:iron, crystals:crystals}); }
+					Some(MapUserInteraction::BuildUniversity{..}) => {return Some(MapUserInteraction::BuildUniversity{index:((i as usize * self.cols + j)as u32)}); }
 					_=> {}
 				}
 			}
@@ -355,6 +376,9 @@ impl Map { // interface for game state updates
 	}
 	pub fn build_iron_factory_on_land(&mut self, index: u32) -> bool {
 		self.land_matrix[index as usize].build_iron_factory()
+	}
+	pub fn build_university(&mut self, index: u32) {
+		self.land_matrix[index as usize].build_university();
 	}
 	pub fn upgrade_iron_factory(&mut self, index: u32) {
 		self.land_matrix[index as usize].upgrade_iron_factory();

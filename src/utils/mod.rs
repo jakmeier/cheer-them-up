@@ -10,7 +10,7 @@ use gfx_device_gl::Resources;
 use gfx_device_gl::command::CommandBuffer;
 use gfx_graphics::GfxGraphics;
 
-/// Provides functions to test clicks and hoever on the rectangle given by the coordinates function 
+/// Provides functions to test clicks and hovers on the rectangle given by the coordinates function 
 pub trait ClickableRectangle {
 	//requires
 	/// -> x, y, w, h

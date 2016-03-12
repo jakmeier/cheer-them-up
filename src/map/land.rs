@@ -16,6 +16,7 @@ use rand;
 use CONCRETE_PRICE;
 use IRON_FACTORY_PRICE;
 use IRON_FACTORY_UPGRADE_PRICE;
+use UNIVERSITY_PRICE;
 
 
 enum ButtonType{
@@ -25,6 +26,7 @@ enum ButtonType{
 	BuildIronFactory,
 	Lumber,
 	UpgradeIronFactory,
+	BuildUniversity,
 }
 
 enum LandType {
@@ -32,6 +34,7 @@ enum LandType {
 	Tree{fir: bool, grow_state: f64},
 	Concreted,
 	IronFactory{level:u32, stored:f64},
+	University,
 }
 
 pub struct Land {
@@ -104,6 +107,7 @@ impl Land {
 					self.land_type = LandType::IronFactory{level:level, stored: stored_after};
 				}
 			}
+			LandType::University => {}
 		}
 		if refresh_buttons_later {self.refresh_buttons();}
 		None
@@ -115,7 +119,7 @@ impl Land {
 		
 		match self.land_type {
 			LandType::Empty | LandType::Tree{..} => {/* keep value from above */}
-			LandType::Concreted | LandType::IronFactory{..} => { color =  [0.3, 0.3, 0.3, 1.0]}
+			LandType::Concreted | LandType::IronFactory{..} | LandType::University => { color =  [0.3, 0.3, 0.3, 1.0]}
 		}
 		
 		
@@ -146,6 +150,12 @@ impl Land {
 				let x_scale = self.w/(sprite_w as f64);
 				let y_scale = self.h/(sprite_h as f64);
 				image(&(sprite_array[9]), view.trans(self.x, self.y).scale(x_scale, y_scale), g);
+			}
+			LandType::University => {
+				let (sprite_w, sprite_h) = sprite_array[14].get_size();
+				let x_scale = self.w/(sprite_w as f64);
+				let y_scale = self.h/(sprite_h as f64);
+				image(&(sprite_array[14]), view.trans(self.x, self.y).scale(x_scale, y_scale), g);
 			}
 		}
 		
@@ -205,14 +215,14 @@ impl Land {
 					ButtonType::Concrete => {
 						(*b).draw(g, view, &(sprite_array[2]), x, y, 2.0 * d, 2.0 * e);
 						if hover {
-							result = Some(DrawRequest::ResourcePrice{price: [0, 0, CONCRETE_PRICE, 0], coordinates: view.trans(x, y + (3.0*e)), font_size:font_size as u32});
+							result = Some(DrawRequest::ResourcePrice{price: CONCRETE_PRICE, coordinates: view.trans(x, y + (3.0*e)), font_size:font_size as u32});
 							//text::Text::new_color([1.0,1.0, 1.0, 1.0], font_size as u32).draw( &((CONCRETE_PRICE).to_string() + " Iron"), *font, &draw_state, view.trans(x, y + (3.0*e) ), g);
 						}
 					}
 					ButtonType::BuildIronFactory => {
 						(*b).draw(g, view, &(sprite_array[3]), x, y, 2.0 * d, 2.0 * e);
 						if hover {
-							result = Some(DrawRequest::ResourcePrice{price: [0, 0, IRON_FACTORY_PRICE, 0], coordinates: view.trans(x, y + (3.0*e)), font_size:font_size as u32});
+							result = Some(DrawRequest::ResourcePrice{price: IRON_FACTORY_PRICE, coordinates: view.trans(x, y + (3.0*e)), font_size:font_size as u32});
 							//text::Text::new_color([1.0,1.0, 1.0, 1.0], font_size as u32).draw( &((IRON_FACTORY_PRICE).to_string() + " Iron"), *font, &draw_state, view.trans(x, y + (3.0*e) ), g);
 						}
 					}
@@ -222,8 +232,13 @@ impl Land {
 					ButtonType::UpgradeIronFactory => {
 						(*b).draw(g, view, &(sprite_array[5]), x, y, 2.0 * d, 2.0 * e);
 						if hover {
-							result = Some(DrawRequest::ResourcePrice{price: [0, 0, IRON_FACTORY_UPGRADE_PRICE, 0], coordinates: view.trans(x, y + (3.0*e)), font_size:font_size as u32});
-							//text::Text::new_color([1.0,1.0, 1.0, 1.0], font_size as u32).draw( &((IRON_FACTORY_UPGRADE_PRICE).to_string() + " Iron"), *font, &draw_state, view.trans(x, y + (3.0*e) ), g);
+							result = Some(DrawRequest::ResourcePrice{price: IRON_FACTORY_UPGRADE_PRICE, coordinates: view.trans(x, y + (3.0*e)), font_size:font_size as u32});
+						}
+					}
+					ButtonType::BuildUniversity => {
+						(*b).draw(g, view, &(sprite_array[6]), x, y, 2.0 * d, 2.0 * e);
+						if hover {	
+							result = Some(DrawRequest::ResourcePrice{price: UNIVERSITY_PRICE, coordinates: view.trans(x, y + (3.0*e)), font_size:font_size as u32});
 						}
 					}
 				}
@@ -273,6 +288,10 @@ impl Land {
 							result = Some(MapUserInteraction::UpgradeIronFactory{index: 0 as u32});
 							break;
 						}
+						ButtonType::BuildUniversity => {
+							result = Some(MapUserInteraction::BuildUniversity{index: 0 as u32});
+							break;
+						}
 					}		
 				}
 			}
@@ -291,6 +310,7 @@ impl Land {
 				}
 				LandType::Concreted => {
 					self.buttons.push((JkmButton::new(0.0, 0.0, (2.0  *self.w / 3.0), (2.0 * self.h/ 3.0), JkmStyle::OuterCircle, [0.1,0.1,0.1,0.9]), ButtonType::BuildIronFactory));
+					self.buttons.push((JkmButton::new(0.0, 0.0, (2.0  *self.w / 3.0), (2.0 * self.h/ 3.0), JkmStyle::OuterCircle, [0.1,0.1,0.1,0.9]), ButtonType::BuildUniversity));
 				}
 				LandType::Tree{grow_state, ..} => {
 					if grow_state > 0.5 { self.buttons.push((JkmButton::new(0.0, 0.0, (2.0  *self.w / 3.0), (2.0 * self.h/ 3.0), JkmStyle::Rectangle, [0.0,0.0,0.3,0.8]) ,ButtonType::Lumber)); }
@@ -298,6 +318,9 @@ impl Land {
 				}
 				LandType::IronFactory{level, ..} => {
 					if level < 10 {self.buttons.push((JkmButton::new(0.0, 0.0, (2.0  *self.w / 3.0), (2.0 * self.h/ 3.0), JkmStyle::OuterCircle, [0.1,0.1,0.1,0.9]), ButtonType::UpgradeIronFactory));}
+				}
+				LandType::University => {
+					
 				}
 			}
 			self.buttons.push((JkmButton::new(0.0, 0.0, (2.0  *self.w / 3.0), (2.0 * self.h/ 3.0), JkmStyle::Rectangle, [0.0,0.0,0.3,0.8]) ,ButtonType::Sell));
@@ -342,6 +365,10 @@ impl Land {
 		if let LandType::IronFactory{ref mut level, ..} = self.land_type{
 			*level += 1;	
 		}
+		self.refresh_buttons();
+	}
+	pub fn build_university(&mut self){
+		self.land_type = LandType::University;
 		self.refresh_buttons();
 	}
 }

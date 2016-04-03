@@ -2,6 +2,7 @@ use utils::ClickableRectangle;
 use utils::JkmButton;
 use utils::JkmStyle;
 
+use constants::*;
 use map::MapUserInteraction;
 use DrawRequest;
 
@@ -12,11 +13,6 @@ use gfx_graphics::GfxGraphics;
 
 use rand;
 
-//constants
-use CONCRETE_PRICE;
-use IRON_FACTORY_PRICE;
-use IRON_FACTORY_UPGRADE_PRICE;
-use UNIVERSITY_PRICE;
 
 
 enum ButtonType{

@@ -12,8 +12,9 @@ pub const UNIVERSITY_PRICE: [u32;4] = [5,5,5,5];
 
 // Defence
 	//General
-	pub const BATTLEFIELD_W: f64 = 400.0;
+	pub const BATTLEFIELD_W: f64 = 600.0;
 	pub const BATTLEFIELD_H: f64 = 1000.0;
+
 	pub const BF_SHOP_SPLIT_RATIO: f64 = 0.875;
 	
 	// Enemy
@@ -21,13 +22,17 @@ pub const UNIVERSITY_PRICE: [u32;4] = [5,5,5,5];
 		//ids
 		pub const BASIC_EID: usize = 0;
 		
-	
+		// Speed list
+		pub const ENEMY_SPEED: [f64; 3] = [5.0, 10.0, 25.0 ];
+		
 		//Sprite constants	
-		pub const ENEMY_SIZE: f64 = 60.0;
 		
 		pub const ENEMY_SPRITE_LIST: [&'static str; 1] = ["enemy_i.png"];
 		pub const NUMBER_OF_ES: usize = 1;
 		
+		//size
+		pub const STD_ENEMY_W: f64 = 50.0;
+		pub const STD_ENEMY_H: f64 = 50.0;	
 		
 	// Tower
 		
@@ -36,7 +41,7 @@ pub const UNIVERSITY_PRICE: [u32;4] = [5,5,5,5];
 		pub const AOE_TID: usize = 1;
 		
 		
-		pub const DEFAULT_TOWER_W: f64 = 50.0;
+		pub const DEFAULT_TOWER_W: f64 = 75.0;
 		pub const DEFAULT_TOWER_H: f64 = 100.0;
 		
 		pub const NUMBER_OF_TOWERS: usize = 2;

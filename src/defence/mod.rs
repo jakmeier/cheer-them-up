@@ -4,6 +4,9 @@
 
 //! This is the Tower Defence Module. The remaining health points of the player are also stored in here and therefore this module can send a message that the player lost. This is the only way the game comes to an end other than exiting it manually.
 
+extern crate jkm_shortest_path_map;
+use self::jkm_shortest_path_map::JkmShortestPathMap;
+
 use constants::*;
 use super::Drawable;
 use DrawRequest;
@@ -38,6 +41,7 @@ pub struct Defence {
 	width: f64, height: f64, dx: f64, dy: f64,
 	shop: shop::Shop,
 	background: Texture<Resources>,
+	shortest_path_map: JkmShortestPathMap,
 	towers: Vec<Box<Tower>>,
 	tower_templates: [Box<Tower>;NUMBER_OF_TOWERS],
 	tower_sprites: Vec<Texture<Resources>>,
@@ -49,6 +53,9 @@ pub struct Defence {
 impl Defence {
 	/// width and height are not related to the actual drawn size, they only define the size of the battle field, i.e. how many objects can fit on it.
 	pub fn new (w: &PistonWindow, hp: u32, width: f64, height: f64) -> Defence {
+		
+		let mut spm = JkmShortestPathMap::new( (0.0, 0.0), (0.0, height - STD_ENEMY_H ),(-(width / 2.0), 0.0, width, height) );
+		spm.add_map_border();
 		
 		let img = find_folder::Search::ParentsThenKids(3, 3).for_folder("img").unwrap();
 		let folder = img.join("rainbow_road_from_hell.png");
@@ -63,7 +70,7 @@ impl Defence {
 		let mut enemies: Vec<Box<Enemy>> = Vec::new();
 		enemies.push( Box::new(enemy::basic_enemy::BasicEnemy::new()) );
 		
-		let mut towers = Vec::new();
+		let towers = Vec::new();
 		
 		// load tower sprites
 		let mut tower_sprites: Vec<Texture<Resources>> = Vec::new();
@@ -96,6 +103,7 @@ impl Defence {
 			width: width, height: height, dx: 1.0, dy: 1.0,
 			shop: shop::Shop::new(),
 			background: background,
+			shortest_path_map: spm,
 			towers: towers,
 			tower_templates: t_temp,
 			tower_sprites: tower_sprites,
@@ -106,7 +114,7 @@ impl Defence {
 	pub fn on_update(&mut self, upd: UpdateArgs) {
 		// enemies
 		for e in self.enemies.iter_mut() {
-			e.update(upd.dt);
+			e.update(upd.dt, &self.shortest_path_map);
 		}
 	}
 	pub fn on_click(&mut self, x: f64, y: f64) -> Option<DefenceUserInteraction> {
@@ -154,10 +162,9 @@ impl Drawable for Defence {
 		
 		
 		// enemies
-		let enemy_size = if dx < dy {dx * ENEMY_SIZE } else {dy * ENEMY_SIZE };
 		let enemy_view = view.trans(w/2.0, 0.0);
 		for e in self.enemies.iter() {
-			e.draw(g, enemy_view, enemy_size, enemy_size, &self.enemy_sprites);
+			e.draw(g, enemy_view, dx, dy, &self.enemy_sprites);
 		}
 		
 		// projectiles
@@ -184,6 +191,13 @@ impl Defence {
 			AOE_TID => Box::new(tower::aoe_tower::AoeTower::new(x, y)),
 			_ => panic!("Unexpected tower ID: {}", tower_id),
 		};
+		let (w,h) = new_tower.get_tower_size();
+		self.shortest_path_map.insert_obstacle(x-STD_ENEMY_W, y-STD_ENEMY_H, w, h );
 		self.towers.push(new_tower);
+		
+		for e in self.enemies.iter_mut() {
+			e.refresh_destination(&self.shortest_path_map);
+		}
+		
 	}
 }

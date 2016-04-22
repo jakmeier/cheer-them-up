@@ -35,7 +35,7 @@ pub enum DefenceUserInteraction{
 }
 
 /// width and height are not related to the actual drawn size, they only define the size of the battle field, i.e. how many objects can fit on it.
-/// dx and dy store the amount of pixels that are drawn per width / height and are updated whenever draw() is called
+/// dx and dy store the amount of pixels that are drawn per width / height for the entire module and are updated whenever draw() is called
 pub struct Defence {
 	hp: u32,
 	width: f64, height: f64, dx: f64, dy: f64,
@@ -54,7 +54,8 @@ impl Defence {
 	/// width and height are not related to the actual drawn size, they only define the size of the battle field, i.e. how many objects can fit on it.
 	pub fn new (w: &PistonWindow, hp: u32, width: f64, height: f64) -> Defence {
 		
-		let mut spm = JkmShortestPathMap::new( (0.0, 0.0), (0.0, height - STD_ENEMY_H ),(-(width / 2.0), 0.0, width, height) );
+		let bf_height = height * BF_SHOP_SPLIT_RATIO;
+		let mut spm = JkmShortestPathMap::new( (width / 2.0, 0.0), (width / 2.0 , bf_height - STD_ENEMY_H ),(0.0, 0.0, width - STD_ENEMY_W, bf_height- STD_ENEMY_H) );
 		spm.add_map_border();
 		
 		let img = find_folder::Search::ParentsThenKids(3, 3).for_folder("img").unwrap();
@@ -68,7 +69,7 @@ impl Defence {
         .unwrap();
 		
 		let mut enemies: Vec<Box<Enemy>> = Vec::new();
-		enemies.push( Box::new(enemy::basic_enemy::BasicEnemy::new()) );
+		enemies.push( Box::new(enemy::basic_enemy::BasicEnemy::new( width/2.0, 0.0) ) );
 		
 		let towers = Vec::new();
 		
@@ -162,9 +163,9 @@ impl Drawable for Defence {
 		
 		
 		// enemies
-		let enemy_view = view.trans(w/2.0, 0.0);
+		//let enemy_view = view.trans(w/2.0, 0.0);
 		for e in self.enemies.iter() {
-			e.draw(g, enemy_view, dx, dy, &self.enemy_sprites);
+			e.draw(g, view, dx, dy, &self.enemy_sprites);
 		}
 		
 		// projectiles
@@ -192,7 +193,7 @@ impl Defence {
 			_ => panic!("Unexpected tower ID: {}", tower_id),
 		};
 		let (w,h) = new_tower.get_tower_size();
-		self.shortest_path_map.insert_obstacle(x-STD_ENEMY_W, y-STD_ENEMY_H, w, h );
+		self.shortest_path_map.insert_obstacle(x-STD_ENEMY_W, y-STD_ENEMY_H, w+STD_ENEMY_W, h+STD_ENEMY_H );
 		self.towers.push(new_tower);
 		
 		for e in self.enemies.iter_mut() {

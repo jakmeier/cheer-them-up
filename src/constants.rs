@@ -23,7 +23,7 @@ pub const UNIVERSITY_PRICE: [u32;4] = [5,5,5,5];
 		pub const BASIC_EID: usize = 0;
 		
 		// Speed list
-		pub const ENEMY_SPEED: [f64; 3] = [5.0, 10.0, 25.0 ];
+		pub const ENEMY_SPEED: [f64; 3] = [10.0, 20.0, 30.0 ];
 		
 		//Sprite constants	
 		

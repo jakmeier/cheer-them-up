@@ -27,6 +27,15 @@ pub trait Tower{
 		(DEFAULT_TOWER_W, DEFAULT_TOWER_H)
 	}
 	
+	fn attack_tower(&mut self, power: f64) {
+		let hp = self.get_health() - power;
+		if hp < 0.0 {  self.set_health(0.0);}
+		else { self.set_health(hp); }
+	}
+	
+	fn get_health(&self) -> f64;
+	fn set_health(&mut self, f64);
+	
 	fn draw(&self, g: &mut GfxGraphics<Resources, CommandBuffer>, view: math::Matrix2d, dx: f64, dy: f64, sprite_array: &[Texture<Resources>]) {
 		let (w, h) = self.get_tower_size();
 		let (sprite_w, sprite_h) = sprite_array[self.get_tower_type_id()].get_size();
@@ -38,5 +47,7 @@ pub trait Tower{
 	fn update(&mut self, dt: f64 ) {
 		//TODO
 	}
-	
+	fn is_dead(&self) -> bool {
+		self.get_health() <= 0.0
+	}
 }

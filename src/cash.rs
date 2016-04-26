@@ -12,6 +12,7 @@ use super::gfx_device_gl::Resources;
 use super::gfx_device_gl::command::CommandBuffer;
 use super::gfx_graphics::GfxGraphics;
 use super::find_folder;
+use constants::START_RESSOURCES;
 
 use DrawRequest;
 
@@ -67,7 +68,7 @@ impl CashHeader{
 		let glyphs = Glyphs::new(font, factory).unwrap();
 		
 		CashHeader{
-			coins: 10, wood: 10, iron: 10, crystals: 10,
+			coins: START_RESSOURCES[0], wood: START_RESSOURCES[1], iron: START_RESSOURCES[2], crystals: START_RESSOURCES[3],
 			coins_sprite: coin_img, wood_sprite: wood_img, iron_sprite: iron_img, crystal_sprite: crystal_img,
 			font: glyphs
 		}

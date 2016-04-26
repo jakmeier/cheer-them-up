@@ -31,8 +31,9 @@ impl Tower for BasicTower {
 	fn set_coordinates(&mut self, x:f64, y:f64){
 		self.x = x;
 		self.y = y;
-	}
-		
+	}	
+	fn get_health(&self) -> f64 { self.health }
+	fn set_health(&mut self, h: f64) { self.health = h; }
 	fn get_tower_type_id(&self) -> usize {
 		BASIC_TID
 	}

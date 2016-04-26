@@ -113,10 +113,33 @@ impl Defence {
 		}
 	}
 	pub fn on_update(&mut self, upd: UpdateArgs) {
-		// enemies
-		for e in self.enemies.iter_mut() {
-			e.update(upd.dt, &self.shortest_path_map);
+		
+		// towers
+		let mut to_remove = Vec::new();
+		for (i,t) in self.towers.iter().enumerate() {
+			if t.is_dead() { 
+				to_remove.push(i); 
+				let (x,y) = t.get_coordinates();
+				let (w,h) = t.get_tower_size();
+				self.shortest_path_map.remove_obstacle(x-STD_ENEMY_W, y-STD_ENEMY_H, w+STD_ENEMY_W, h+STD_ENEMY_H);
+			}
 		}
+		let map_changed = to_remove.len() > 0;
+		while let Some(i) = to_remove.pop() {
+			self.towers.swap_remove(i);
+		}
+		
+		// enemies
+		if map_changed { 
+			for e in self.enemies.iter_mut() {
+				e.get_mut().berserker_mode = false;
+				e.refresh_destination(&self.shortest_path_map);
+			}
+		}
+		for e in self.enemies.iter_mut() {
+			e.update(upd.dt, &self.shortest_path_map, &mut self.towers);
+		}
+		
 	}
 	pub fn on_click(&mut self, x: f64, y: f64) -> Option<DefenceUserInteraction> {
 		if let Some(DefenceUserInteraction::BuyTower{x: w, y: h, tower_id}) = self.shop.on_click(x, y - BF_SHOP_SPLIT_RATIO * self.height * self.dy) {

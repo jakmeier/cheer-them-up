@@ -32,7 +32,8 @@ impl Tower for AoeTower {
 		self.x = x;
 		self.y = y;
 	}
-		
+	fn get_health(&self) -> f64 { self.health }
+	fn set_health(&mut self, h: f64) { self.health = h; }	
 	fn get_tower_type_id(&self) -> usize {
 		AOE_TID
 	}

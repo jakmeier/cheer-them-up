@@ -9,8 +9,12 @@ use piston_window::*;
 use gfx_device_gl::Resources;
 use gfx_device_gl::command::CommandBuffer;
 use gfx_graphics::GfxGraphics;
+
+use std;
+
 use super::jkm_shortest_path_map::JkmShortestPathMap;
-use constants::ENEMY_SPEED;
+use super::tower::Tower;
+use constants::*;
 
 pub mod basic_enemy;
 
@@ -19,10 +23,12 @@ struct EnemyAttributes {
 	w: f64, h: f64,
 	life: f64,
 	speed: usize,
+	attack: f64, attack_ratio: f64, attack_reload: f64,
 	destination: (f64, f64),
 	destination_reached: bool,
 	base_reached: bool,
-	berserker_mode: bool,
+	pub berserker_mode: bool, attack_target: Option<usize>,
+	animation_offset: (f64, f64),
 }
 
 pub trait Enemy {
@@ -51,43 +57,181 @@ pub trait Enemy {
 		let x_scale = w*dx/(sprite_w as f64);
 		let y_scale = h*dy/(sprite_h as f64);
 		let (x,y) = self.get_coordinates();
+		let offset = self.get().animation_offset;
+		let x = x + offset.0;
+		let y = y + offset.1;
 		image(&(sprite_array[self.get_enemy_type_id()]), view.trans(x*dx,y*dy).scale(x_scale, y_scale), g);
 	}
-	fn update(&mut self, dt: f64, spm: &JkmShortestPathMap ) {
-		//TODO: Berserker mode / attack base
+	fn update(&mut self, dt: f64, spm: &JkmShortestPathMap, towers: &mut Vec<Box<Tower>> ) {
 		
-		//WALKING
-		if !self.get().base_reached {
+		//WALKING ( Open path to destination )
+		if !self.get().base_reached && !self.get().berserker_mode {
 			if self.get().destination_reached {
 				self.refresh_destination(&spm);
 			}
 			
 			let (dest_x, dest_y) = self.get().destination;
-			let (mut x, mut y) = self.get_coordinates();
-			let step = ENEMY_SPEED[self.get().speed] * dt;
-			
-			if x < dest_x {
-				x += step;
-				if x > dest_x { x = dest_x; }
-			}
-			else if x > dest_x {
-				x -= step;
-				if x < dest_x { x = dest_x; }
-			}
-			else if y < dest_y {
-				y += step;
-				if y > dest_y { y = dest_y; }
-			}
-			else if y > dest_y {
-				y -= step;
-				if y < dest_y { y = dest_y; }
+			self.walk_a_step(dest_x, dest_y, dt);
+		}
+		
+		// BERSERKER MODE
+		else if !self.get().base_reached {
+			if let Some(target) = self.get().attack_target {
+				self.attack_tower( &mut towers[target], dt );
 			}
 			else {
-				debug_assert!(x==dest_x && y == dest_y);
-				self.destination_reached();
+				let (x,y) = spm.get_destination_coordinates();
+				self.find_target(&towers, x, y);
 			}
-			self.set_coordinates(x,y);
+			
 		}
+		
+		// BASE REACHED
+		else {
+			debug_assert!(self.get().base_reached);
+			let (x, _) = self.get_coordinates();
+			self.set_coordinates(x, 0.0);
+			self.get_mut().base_reached = false;
+		}
+		
+		/*if self.get().berserker_mode || self.get().base_reached {
+			let (x, _) = self.get_coordinates();
+			self.set_coordinates(x, 0.0);
+			self.get_mut().berserker_mode = false;
+			self.get_mut().base_reached = false;
+		}*/
+	}
+	
+	fn walk_a_step(&mut self, dest_x: f64, dest_y: f64, dt: f64) {
+		let (mut x, mut y) = self.get_coordinates();
+		let step = ENEMY_SPEED[self.get().speed] * dt;
+		
+		if x < dest_x {
+			x += step;
+			if x > dest_x { x = dest_x; }
+		}
+		else if x > dest_x {
+			x -= step;
+			if x < dest_x { x = dest_x; }
+		}
+		else if y < dest_y {
+			y += step;
+			if y > dest_y { y = dest_y; }
+		}
+		else if y > dest_y {
+			y -= step;
+			if y < dest_y { y = dest_y; }
+		}
+		else {
+			debug_assert!(x==dest_x && y == dest_y);
+			self.destination_reached();
+		}
+		self.set_coordinates(x,y);
+	}
+	
+	// Walk in a straight line, ignoring all obstacles, into the range of the tower and attack it
+	// This version: Standard melee attack
+	fn attack_tower(&mut self, target: &mut Box<Tower>, dt: f64) {
+		
+		let (x,y) = target.get_coordinates();
+		let (w,h) = target.get_tower_size();
+		let enemy_w = self.get().w;
+		let enemy_h = self.get().h;
+		let enemy_x = self.get().x;
+		let enemy_y = self.get().y;
+		
+		if  enemy_x <= x + w && enemy_x + enemy_w >= x && y == enemy_y + enemy_h {
+			// enemy on top
+			self.get_mut().attack_reload += dt;
+			let period_third = self.get().attack_ratio / 3.0;
+			let amplitude = enemy_w / 2.0;
+			let c = amplitude/period_third;
+			let a = 2.0* amplitude/(period_third* period_third);
+			match self.get().attack_reload {
+				t if t >= 0.0 && t <= period_third => {
+						self.get_mut().animation_offset = (0.0, t*t*(-c)/2.0 );
+					},
+				total_t if total_t >= period_third && total_t <= (2.0 * period_third) => {
+						let t = total_t - period_third;
+						self.get_mut().animation_offset = (0.0, (period_third*period_third*(-c)/2.0) + t*((period_third*(-c)) + t*c/2.0 ));
+					},
+				total_t if total_t >= (2.0 * period_third) && total_t <= self.get().attack_ratio => {
+						let t = total_t - 2.0 * period_third;
+						self.get_mut().animation_offset = (0.0, -amplitude + (a/2.0)* t*t );
+					},
+				_ => self.get_mut().animation_offset = (0.0,0.0),
+			}
+			if self.get().attack_reload >= self.get().attack_ratio {
+				target.attack_tower( self.get().attack );
+				self.get_mut().attack_reload = 0.0;
+			}
+			
+		}
+		else if x == enemy_x + enemy_w && enemy_y <= y + h && enemy_y + enemy_h >= y {
+			// enemey on the left side
+			self.get_mut().attack_reload += dt;
+		}
+		else if x + w == enemy_x && enemy_y <= y + h && enemy_y + enemy_h >= y {
+			// enemy on the right side
+			self.get_mut().attack_reload += dt;
+		}
+		else {
+			if enemy_y + enemy_h < y {self.walk_a_step(enemy_x, y - enemy_h, dt); }
+			else if enemy_x + enemy_w < x {self.walk_a_step(x - enemy_w, enemy_y, dt); }
+			else {self.walk_a_step(x + w, enemy_y, dt); }
+		}
+		
+	}
+	// Adjust attribute attack_traget
+	// This version: Find target for standard attack
+	fn find_target(&mut self, towers: &Vec<Box<Tower>>, destination_x: f64, destination_y: f64) {
+		let mut new_target: (f64, usize) = (std::f64::INFINITY, 0);
+		if self.get().y >= destination_y {
+			// Walk horizontally
+			if self.get().x < destination_x {
+				// Walk right
+				for (i,t) in towers.iter().enumerate() {
+					let (x,y) = t.get_coordinates();
+					let (w,h) = t.get_tower_size();
+					if x <= destination_x && x + w >= self.get().x 
+						&& y <= destination_y  && y + h >= self.get().y
+						&& (x-self.get().x).abs() < new_target.0
+						{ new_target = (x-self.get().x, i); }
+				}
+			}
+			else if self.get().x > destination_x {
+				// Walk left
+				for (i,t) in towers.iter().enumerate() {
+					let (x,y) = t.get_coordinates();
+					let (w,h) = t.get_tower_size();
+					if x + w >= destination_x && x <= self.get().x + self.get().w
+						&& y <= destination_y  && y + h >= self.get().y
+						&& (self.get().x - x).abs() < new_target.0
+						{ new_target = (self.get().x - x, i); }
+				}
+			}
+			else {
+				// base_reached
+				self.get_mut().base_reached = true;
+			} 
+		} 
+		else {
+			// Walk down
+			for (i,t) in towers.iter().enumerate() {
+				let (x,y) = t.get_coordinates();
+				let (w,h) = t.get_tower_size();
+				if self.get().x + self.get().w >= x && self.get().x <= x + w 
+					&& y >= self.get().y + self.get().h
+					&& (y-self.get().y).abs() < new_target.0
+					{ new_target = (y-self.get().y, i); }
+			}
+		}
+		
+		debug_assert!(new_target.0 < std::f64::INFINITY);
+		
+		self.get_mut().attack_target = Some(new_target.1);
+		
+		
 	}
 	
 	fn refresh_destination(&mut self, spm: &JkmShortestPathMap) {
@@ -101,15 +245,17 @@ pub trait Enemy {
 					if new_x == old_x && new_y == old_y { self.get_mut().base_reached = true; }
 					else { self.get_mut().destination_reached = false; }
 				}
-				 else {println!("No next checkpoint: activate berserker mode");}
+				 else {self.get_mut().berserker_mode = true;}
 			}
 			else
 			{
 				if let Some(d) = spm.nearest_checkpoint(x, y) { 
 					self.get_mut().destination = d;
 				}
-				else {println!("No nearest checkpoint: activate berserker mode");}
+				else {self.get_mut().berserker_mode = true;}
 			}
+			//let (x, y) = self.get_coordinates();
+			//println!("New destination: [{}|{}]", x, y);
 		}
 	}
 	

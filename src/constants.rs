@@ -1,8 +1,11 @@
 //! Contains constants used in the game to balance it. At the moment there is only one difficulty, but maybe there will be more later.
 
 
-//General
+// UI
 pub const STD_FONT_SIZE: u32 = 20;
+
+//Meta
+pub const START_RESSOURCES: [u32;4] = [20,20,20,20];
 
 // Map
 pub const CONCRETE_PRICE: [u32;4] = [0,0,3,0];
@@ -23,7 +26,11 @@ pub const UNIVERSITY_PRICE: [u32;4] = [5,5,5,5];
 		pub const BASIC_EID: usize = 0;
 		
 		// Speed list
-		pub const ENEMY_SPEED: [f64; 3] = [10.0, 20.0, 30.0 ];
+		pub const ENEMY_SPEED: [f64; 3] = [25.0, 40.0, 75.0 ];
+		
+		// Stats for each enemy type
+		pub const STD_ENEMY_ATTACK: f64 = 7.0;
+		pub const STD_ENEMY_ATTACK_RATIO: f64 = 0.5;
 		
 		//Sprite constants	
 		
@@ -48,6 +55,6 @@ pub const UNIVERSITY_PRICE: [u32;4] = [5,5,5,5];
 		pub const TOWER_SPRITE_LIST: [&'static str; NUMBER_OF_TOWERS] =["jar.png", "box.png"];
 		pub const TOWER_PRICE_LIST: [[u32;4];NUMBER_OF_TOWERS] = [
 				[2,0,0,2],
-				[0,5,0,0],
+				[0,4,0,0],
 			];
 		

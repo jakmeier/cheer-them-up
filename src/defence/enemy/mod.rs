@@ -140,13 +140,30 @@ pub trait Enemy {
 		let enemy_x = self.get().x;
 		let enemy_y = self.get().y;
 		
+		//animation parameters
+		let period_third = self.get().attack_ratio / 3.0;
+		let amplitude = enemy_w / 2.0;
+		let c = amplitude/period_third;
+		let a = 2.0* amplitude/(period_third* period_third);
+		
+			//attack
+			self.get_mut().attack_reload += dt;
+			if self.get().attack_reload >= self.get().attack_ratio {
+				target.attack_tower( self.get().attack );
+				self.get_mut().attack_reload = 0.0;
+			}
+			
+			// animation
 		if  enemy_x <= x + w && enemy_x + enemy_w >= x && y == enemy_y + enemy_h {
 			// enemy on top
+			//attack
 			self.get_mut().attack_reload += dt;
-			let period_third = self.get().attack_ratio / 3.0;
-			let amplitude = enemy_w / 2.0;
-			let c = amplitude/period_third;
-			let a = 2.0* amplitude/(period_third* period_third);
+			if self.get().attack_reload >= self.get().attack_ratio {
+				target.attack_tower( self.get().attack );
+				self.get_mut().attack_reload = 0.0;
+			}
+			
+			// animation
 			match self.get().attack_reload {
 				t if t >= 0.0 && t <= period_third => {
 						self.get_mut().animation_offset = (0.0, t*t*(-c)/2.0 );
@@ -161,19 +178,58 @@ pub trait Enemy {
 					},
 				_ => self.get_mut().animation_offset = (0.0,0.0),
 			}
+			
+			
+		}
+		else if x == enemy_x + enemy_w && enemy_y <= y + h && enemy_y + enemy_h >= y {
+			// enemey on the left side
+			//attack
+			self.get_mut().attack_reload += dt;
 			if self.get().attack_reload >= self.get().attack_ratio {
 				target.attack_tower( self.get().attack );
 				self.get_mut().attack_reload = 0.0;
 			}
 			
-		}
-		else if x == enemy_x + enemy_w && enemy_y <= y + h && enemy_y + enemy_h >= y {
-			// enemey on the left side
-			self.get_mut().attack_reload += dt;
+			// animation
+			match self.get().attack_reload {
+				t if t >= 0.0 && t <= period_third => {
+						self.get_mut().animation_offset = ( t*t*(-c)/2.0, 0.0 );
+					},
+				total_t if total_t >= period_third && total_t <= (2.0 * period_third) => {
+						let t = total_t - period_third;
+						self.get_mut().animation_offset = ((period_third*period_third*(-c)/2.0) + t*((period_third*(-c)) + t*c/2.0 ), 0.0);
+					},
+				total_t if total_t >= (2.0 * period_third) && total_t <= self.get().attack_ratio => {
+						let t = total_t - 2.0 * period_third;
+						self.get_mut().animation_offset = (-amplitude + (a/2.0)* t*t, 0.0 );
+					},
+				_ => self.get_mut().animation_offset = (0.0,0.0),
+			}
 		}
 		else if x + w == enemy_x && enemy_y <= y + h && enemy_y + enemy_h >= y {
 			// enemy on the right side
+			//attack
 			self.get_mut().attack_reload += dt;
+			if self.get().attack_reload >= self.get().attack_ratio {
+				target.attack_tower( self.get().attack );
+				self.get_mut().attack_reload = 0.0;
+			}
+			
+			// animation
+			match self.get().attack_reload {
+				t if t >= 0.0 && t <= period_third => {
+						self.get_mut().animation_offset = (-t*t*(-c)/2.0, 0.0);
+					},
+				total_t if total_t >= period_third && total_t <= (2.0 * period_third) => {
+						let t = total_t - period_third;
+						self.get_mut().animation_offset = (-(period_third*period_third*(-c)/2.0) + t*((period_third*(-c)) + t*c/2.0 ), 0.0);
+					},
+				total_t if total_t >= (2.0 * period_third) && total_t <= self.get().attack_ratio => {
+						let t = total_t - 2.0 * period_third;
+						self.get_mut().animation_offset = (amplitude + (a/2.0)* t*t, 0.0 );
+					},
+				_ => self.get_mut().animation_offset = (0.0,0.0),
+			}
 		}
 		else {
 			if enemy_y + enemy_h < y {self.walk_a_step(enemy_x, y - enemy_h, dt); }
@@ -185,18 +241,25 @@ pub trait Enemy {
 	// Adjust attribute attack_traget
 	// This version: Find target for standard attack
 	fn find_target(&mut self, towers: &Vec<Box<Tower>>, destination_x: f64, destination_y: f64) {
+		
+		let enemy_x = self.get().x;
+		let enemy_y = self.get().y;
+		let enemy_w = self.get().w;
+		let enemy_h = self.get().h;
+		
 		let mut new_target: (f64, usize) = (std::f64::INFINITY, 0);
-		if self.get().y >= destination_y {
+		
+		if enemy_y >= destination_y {
 			// Walk horizontally
-			if self.get().x < destination_x {
+			if enemy_x < destination_x {
 				// Walk right
 				for (i,t) in towers.iter().enumerate() {
 					let (x,y) = t.get_coordinates();
 					let (w,h) = t.get_tower_size();
-					if x <= destination_x && x + w >= self.get().x 
-						&& y <= destination_y  && y + h >= self.get().y
-						&& (x-self.get().x).abs() < new_target.0
-						{ new_target = (x-self.get().x, i); }
+					if x <= destination_x && x + w >= enemy_x 
+						&& y <= destination_y  && y + h >= enemy_y
+						&& (x-enemy_x).abs() < new_target.0
+						{ new_target = ((x-enemy_x).abs(), i); }
 				}
 			}
 			else if self.get().x > destination_x {
@@ -204,10 +267,10 @@ pub trait Enemy {
 				for (i,t) in towers.iter().enumerate() {
 					let (x,y) = t.get_coordinates();
 					let (w,h) = t.get_tower_size();
-					if x + w >= destination_x && x <= self.get().x + self.get().w
-						&& y <= destination_y  && y + h >= self.get().y
-						&& (self.get().x - x).abs() < new_target.0
-						{ new_target = (self.get().x - x, i); }
+					if x + w >= destination_x && x <= enemy_x + enemy_w
+						&& y <= destination_y  && y + h >= enemy_y
+						&& (enemy_x - x).abs() < new_target.0
+						{ new_target = ((x-enemy_x).abs(), i); }
 				}
 			}
 			else {
@@ -220,10 +283,10 @@ pub trait Enemy {
 			for (i,t) in towers.iter().enumerate() {
 				let (x,y) = t.get_coordinates();
 				let (w,h) = t.get_tower_size();
-				if self.get().x + self.get().w >= x && self.get().x <= x + w 
-					&& y >= self.get().y + self.get().h
-					&& (y-self.get().y).abs() < new_target.0
-					{ new_target = (y-self.get().y, i); }
+				if enemy_x +enemy_w >= x && enemy_x <= x + w 
+					&& y >= enemy_y //+ enemy_h
+					&& (y-enemy_y).abs() < new_target.0
+					{ new_target = ((y-enemy_y).abs(), i); }
 			}
 		}
 		

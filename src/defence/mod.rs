@@ -132,7 +132,6 @@ impl Defence {
 		// enemies
 		if map_changed { 
 			for e in self.enemies.iter_mut() {
-				e.get_mut().berserker_mode = false;
 				e.refresh_destination(&self.shortest_path_map);
 			}
 		}
@@ -181,14 +180,14 @@ impl Drawable for Defence {
 		
 		// towers
 		for t in self.towers.iter() {
-			t.draw(g, view, dx, dy, &self.tower_sprites);
+			t.draw(g, view, mouse, dx, dy, &self.tower_sprites);
 		}
 		
 		
 		// enemies
 		//let enemy_view = view.trans(w/2.0, 0.0);
 		for e in self.enemies.iter() {
-			e.draw(g, view, dx, dy, &self.enemy_sprites);
+			e.draw(g, view, mouse, dx, dy, &self.enemy_sprites);
 		}
 		
 		// projectiles
@@ -197,7 +196,7 @@ impl Drawable for Defence {
 		let draw_req = self.shop.draw(g, view.trans(0.0, battlefield_h), w, h - battlefield_h, [mouse[0], mouse[1] - battlefield_h], &self.tower_sprites, dx, dy);
 		match draw_req{
 			Some(DrawRequest::DrawTower{tower_id}) => {
-				self.tower_templates[tower_id].draw(g, view.trans(mouse[0],mouse[1]), dx, dy, &self.tower_sprites);
+				self.tower_templates[tower_id].draw(g, view.trans(mouse[0],mouse[1]), [mouse[0] - 10.0, mouse[1]-10.0], dx, dy, &self.tower_sprites);
 			}
 			_ => {}
 		}

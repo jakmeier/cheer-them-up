@@ -3,9 +3,11 @@
 
 // UI
 pub const STD_FONT_SIZE: u32 = 20;
+pub const HEALTH_BAR_HEIGHT: f64 = 8.0;
 
 //Meta
 pub const START_RESSOURCES: [u32;4] = [20,20,20,20];
+pub const EPS: f64 = 1.0/1048576.0;
 
 // Map
 pub const CONCRETE_PRICE: [u32;4] = [0,0,3,0];

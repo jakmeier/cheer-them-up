@@ -40,7 +40,8 @@ pub struct Defence {
 	hp: u32,
 	width: f64, height: f64, dx: f64, dy: f64,
 	shop: shop::Shop,
-	background: Texture<Resources>,
+	//background: Texture<Resources>,
+	general_sprites: Vec<Texture<Resources>>,
 	shortest_path_map: JkmShortestPathMap,
 	towers: Vec<Box<Tower>>,
 	tower_templates: [Box<Tower>;NUMBER_OF_TOWERS],
@@ -58,7 +59,7 @@ impl Defence {
 		let mut spm = JkmShortestPathMap::new( (width / 2.0, 0.0), (width / 2.0 , bf_height - STD_ENEMY_H ),(0.0, 0.0, width - STD_ENEMY_W, bf_height- STD_ENEMY_H) );
 		spm.add_map_border();
 		
-		let img = find_folder::Search::ParentsThenKids(3, 3).for_folder("img").unwrap();
+		/*let img = find_folder::Search::ParentsThenKids(3, 3).for_folder("img").unwrap();
 		let folder = img.join("rainbow_road_from_hell.png");
 		let background = Texture::from_path(
 			&mut *w.factory.borrow_mut(),
@@ -66,12 +67,32 @@ impl Defence {
 			Flip::None,
 			&TextureSettings::new()
 		)
-        .unwrap();
+        .unwrap();*/
 		
 		let mut enemies: Vec<Box<Enemy>> = Vec::new();
 		enemies.push( Box::new(enemy::basic_enemy::BasicEnemy::new( width/2.0, 0.0) ) );
 		
 		let towers = Vec::new();
+		
+		// load generalsprites
+		let mut general_sprites: Vec<Texture<Resources>> = Vec::new();
+		let sprite_names = GENERAL_BATTLEFIELD_SPRITE_LIST;
+		let folder = find_folder::Search::ParentsThenKids(3, 3).for_folder("defence").unwrap();
+		for s in sprite_names.iter() {
+			let f = folder.join(s);
+			let sprite = Texture::from_path( &mut *w.factory.borrow_mut(), &f, Flip::None, &TextureSettings::new()).unwrap();
+			general_sprites.push(sprite);
+		}
+		
+		//load enemy sprites
+		let mut enemy_sprites: Vec<Texture<Resources>> = Vec::new();
+		let sprite_names = ENEMY_SPRITE_LIST;
+		let enemy_folder = find_folder::Search::ParentsThenKids(3, 3).for_folder("enemies").unwrap();
+		for s in sprite_names.iter() {
+			let f = enemy_folder.join(s);
+			let sprite = Texture::from_path( &mut *w.factory.borrow_mut(), &f, Flip::None, &TextureSettings::new()).unwrap();
+			enemy_sprites.push(sprite);
+		}
 		
 		// load tower sprites
 		let mut tower_sprites: Vec<Texture<Resources>> = Vec::new();
@@ -103,7 +124,7 @@ impl Defence {
 			hp: hp,
 			width: width, height: height, dx: 1.0, dy: 1.0,
 			shop: shop::Shop::new(),
-			background: background,
+			general_sprites: general_sprites,
 			shortest_path_map: spm,
 			towers: towers,
 			tower_templates: t_temp,
@@ -142,22 +163,39 @@ impl Defence {
 	}
 	pub fn on_click(&mut self, x: f64, y: f64) -> Option<DefenceUserInteraction> {
 		if let Some(DefenceUserInteraction::BuyTower{x: w, y: h, tower_id}) = self.shop.on_click(x, y - BF_SHOP_SPLIT_RATIO * self.height * self.dy) {
-			if x > 0.0 && x < (self.width  - w)* self.dx && y > 0.0 && y < (self.height - h)* self.dy * BF_SHOP_SPLIT_RATIO {	
-				if !collision::towers_with_rectangle(&self.towers, x/self.dx, y/self.dy, w, h) {
-					return Some(
-						DefenceUserInteraction::BuyTower
-							{
-								x: x/self.dx, 
-								y: y/self.dy,
-								tower_id: tower_id,
-							}
-					);
-				}
+			let x = x/self.dx;
+			let y = y/self.dy;
+			if self.valid_tower_place(x,y,w,h) {
+				return Some(
+					DefenceUserInteraction::BuyTower
+						{
+							x: x, 
+							y: y,
+							tower_id: tower_id,
+						}
+				);
 			}
+		
 		}
 		None
 	}
-	
+	fn on_battlefield(&self, x: f64, y:f64, w: f64, h: f64) -> bool {x > 0.0 && x < (self.width - w) && y > 0.0 && y < (self.height - h)* BF_SHOP_SPLIT_RATIO}
+	fn valid_tower_place(&self, x: f64, y:f64, w: f64, h: f64) -> bool {
+		// Battlefield boundry
+		if  self.on_battlefield(x,y,w,h) {	
+			// Collision with base
+			if x + w < BASE_X || x > (BASE_X + BASE_W) || y + h < BASE_Y || y > (BASE_Y + BASE_H) {
+				// Collision with towers
+				if !collision::towers_with_rectangle(&self.towers, x, y, w, h) {
+					// Collission with enemies
+					if !collision::enemies_with_rectangle(&self.enemies, x, y, w, h) {
+						return true;
+					}
+				}
+			}
+		}
+		false
+	}
 }
 
 impl Drawable for Defence {
@@ -173,10 +211,11 @@ impl Drawable for Defence {
 		let battlefield_h = h * BF_SHOP_SPLIT_RATIO;
 		
 		// background <=> battlefield
-		let (sprite_w, sprite_h) = self.background.get_size();
+		let background = &self.general_sprites[0];
+		let (sprite_w, sprite_h) = background.get_size();
 		let x_scale = w/(sprite_w as f64);
 		let y_scale = battlefield_h/(sprite_h as f64);
-		image(&self.background, view.scale(x_scale, y_scale), g);	
+		image(background, view.scale(x_scale, y_scale), g);	
 		
 		// towers
 		for t in self.towers.iter() {
@@ -197,6 +236,18 @@ impl Drawable for Defence {
 		match draw_req{
 			Some(DrawRequest::DrawTower{tower_id}) => {
 				self.tower_templates[tower_id].draw(g, view.trans(mouse[0],mouse[1]), [mouse[0] - 10.0, mouse[1]-10.0], dx, dy, &self.tower_sprites);
+				let (w,h) = self.tower_templates[tower_id].get_tower_size();
+				let x = mouse[0] / self.dx;
+				let y = mouse[1] / self.dy;
+				if !self.valid_tower_place(x, y, w, h) {
+					let red_cross = &self.general_sprites[1];
+					let (sprite_w, sprite_h) = red_cross.get_size();
+					let x_scale = 25.0 * BATTLEFIELD_UI_SCALE/(sprite_w as f64);
+					let y_scale = 25.0 * BATTLEFIELD_UI_SCALE/(sprite_h as f64);
+					let x = mouse[0] + w*self.dx - 25.0 * BATTLEFIELD_UI_SCALE;
+					let y = mouse[1];
+					image(red_cross, view.trans(x,y).scale(x_scale, y_scale), g);
+				}
 			}
 			_ => {}
 		}

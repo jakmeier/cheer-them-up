@@ -1,9 +1,10 @@
 //! Contains constants used in the game to balance it. At the moment there is only one difficulty, but maybe there will be more later.
 
 
-// UI
+// UI (ALL UI elements should be here, in case different reoultions are supported in the future, this could help a lot.)
 pub const STD_FONT_SIZE: u32 = 20;
 pub const HEALTH_BAR_HEIGHT: f64 = 8.0;
+pub const BATTLEFIELD_UI_SCALE: f64 = 1.0;
 
 //Meta
 pub const START_RESSOURCES: [u32;4] = [20,20,20,20];
@@ -19,8 +20,16 @@ pub const UNIVERSITY_PRICE: [u32;4] = [5,5,5,5];
 	//General
 	pub const BATTLEFIELD_W: f64 = 600.0;
 	pub const BATTLEFIELD_H: f64 = 1000.0;
-
+	pub const BASE_X: f64 = 200.0;
+	pub const BASE_Y: f64 = 800.0;
+	pub const BASE_W: f64 = 200.0;
+	pub const BASE_H: f64 = 200.0;
+	
 	pub const BF_SHOP_SPLIT_RATIO: f64 = 0.875;
+	
+	// General Sprites
+	
+	pub const GENERAL_BATTLEFIELD_SPRITE_LIST: [&'static str; 2] = ["highway_from_hell.png", "cross.png"];
 	
 	// Enemy
 

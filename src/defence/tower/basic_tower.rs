@@ -23,7 +23,7 @@ impl BasicTower {
 					cooldown: 0.0, 
 					attack_power: TOWER_BASE_ATTACK_LIST[BASIC_TID],
 				},
-				range: 400.0,
+				range: TOWER_BASE_RANGE_LIST[BASIC_TID],
 		}
 	}
 }

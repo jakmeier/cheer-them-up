@@ -6,6 +6,7 @@
 
 pub mod basic_tower;
 pub mod aoe_tower;
+pub mod wall;
 
 use constants::*;
 use super::projectile::Projectile;
@@ -35,7 +36,7 @@ pub trait Tower{
 	}	
 	//fn apply_tower_upgrades(&mut self, TowerUpgrades tu);
 		
-	fn get_tower_size(&self) -> (f64, f64) { (DEFAULT_TOWER_W, DEFAULT_TOWER_H) }
+	fn get_tower_size(&self) -> (f64, f64) { TOWER_SIZE_LIST[self.get_tower_type_id()] }
 	fn attack_tower(&mut self, power: f64) {
 		let hp = self.get().health - power;
 		if hp < 0.0 {  self.get_mut().health = 0.0;}
@@ -49,12 +50,15 @@ pub trait Tower{
 		let y_scale = h*dy/(sprite_h as f64);
 		let (x,y) = self.get_coordinates();
 		image(&(sprite_array[self.get_tower_type_id()]), view.trans(x*dx,y*dy).scale(x_scale, y_scale), g);
+		self.attack_animation(g, view.trans(x*dx,y*dy), dx, dy);
 		//Display health if the mouse hovers over the tower
 		if mouse[0]/dx > x && mouse[0]/dx < x+w && mouse[1]/dy > y && mouse[1]/dy < y+h {
 			let hp_ratio = self.get().health / self.get().max_health;
 			rectangle([0.0, 0.8, 0.0, 1.0], [0.0, -HEALTH_BAR_HEIGHT, w*dx*hp_ratio, HEALTH_BAR_HEIGHT], view.trans(x*dx,y*dy), g );
 		}
 	}
+	fn attack_animation(&self, g: &mut GfxGraphics<Resources, CommandBuffer>, view: math::Matrix2d, dx: f64, dy: f64){}
+	
 	fn update(&mut self, dt: f64, enemies: &mut Vec<Box<Enemy>>) -> Option<Projectile> {
 		self.get_mut().cooldown += dt;
 		if self.get().cooldown > self.get().reload_time {

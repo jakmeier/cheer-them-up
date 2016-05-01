@@ -76,7 +76,7 @@ impl Shop {
 				let high_formed = ratio < 1.0;
 				let scale = if high_formed {s/sprite_h as f64} else {s/(sprite_w as f64)};
 				let x = j as f64 * s + if high_formed {(1.0 - ratio)* s/2.0} else {0.0};
-				let y = if high_formed {0.0} else {(1.0 - ratio)* s/2.0};
+				let y = if high_formed {0.0} else {(ratio-1.0)* s/2.0};
 				image(&(sprite_array[i]), view.trans(x,y).scale(scale, scale), g);
 				
 				j += 1;
@@ -101,7 +101,8 @@ impl Shop {
 	pub fn on_click (&mut self, x: f64, y: f64) -> Option<DefenceUserInteraction> {
 		if let Some(i) =  self.selected {
 			self.selected = None;
-			return Some(DefenceUserInteraction::BuyTower{x:DEFAULT_TOWER_W, y:DEFAULT_TOWER_H, tower_id:i});
+			let (w,h) = TOWER_SIZE_LIST[i];
+			return Some(DefenceUserInteraction::BuyTower{x:w, y:h, tower_id:i});
 		}
 		self.selected = self.find_button(x,y);
 		None

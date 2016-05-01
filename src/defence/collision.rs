@@ -110,3 +110,17 @@ fn segment_intersection_test(){
 	assert!( !segment_intersection([0.0,0.0,1.0,1.0],[1.5,1.5,1.0,1.0]) ); // collinear but no intersection
 	assert!( !segment_intersection([1.0,0.0,1.0,1.0],[2.0,1.5,-1.0,-1.0]) ); // no intersection but not parallel
 }
+
+
+pub fn find_enemies_in_circle(enemies: &Vec<Box<Enemy>>, x:f64, y:f64, r:f64) -> Vec<usize> {
+	let mut result = Vec::new();
+	for (i, e) in enemies.iter().enumerate() {
+		let (x0,y0) = e.get_coordinates();
+		let (w,h) = e.get_size();
+		let center_x = x0 + w / 2.0;
+		let center_y = y0 + h / 2.0;
+		if (center_x - x)*(center_x - x) + (center_y - y)*(center_y - y) < r*r
+		{ result.push(i); }
+	}
+	result
+}

@@ -113,6 +113,7 @@ impl Defence {
 		let t_temp :[Box<Tower>;NUMBER_OF_TOWERS] = [
 			Box::new(basic_tower::BasicTower::new(0.0, 0.0)),
 			Box::new(aoe_tower::AoeTower::new(0.0, 0.0)),
+			Box::new(wall::Wall::new(0.0, 0.0)),
 		];
 		
 		Defence {
@@ -287,9 +288,11 @@ impl Defence {
 		match tower_id {
 			BASIC_TID => Box::new(tower::basic_tower::BasicTower::new(x, y)),
 			AOE_TID => Box::new(tower::aoe_tower::AoeTower::new(x, y)),
+			WALL_TID => Box::new(tower::wall::Wall::new(x, y)),
 			_ => panic!("Unexpected tower ID: {}", tower_id),
 		};
 		let (w,h) = new_tower.get_tower_size();
+		// TODO: replace constants with some correct value!
 		self.shortest_path_map.insert_obstacle(x-STD_ENEMY_W, y-STD_ENEMY_H, w+STD_ENEMY_W, h+STD_ENEMY_H );
 		self.towers.push(new_tower);
 		

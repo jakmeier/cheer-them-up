@@ -57,20 +57,20 @@ pub const UNIVERSITY_PRICE: [u32;4] = [5,5,5,5];
 		//ids
 		pub const BASIC_TID: usize = 0;
 		pub const AOE_TID: usize = 1;
+		pub const WALL_TID: usize = 2;
 		
-		
-		pub const DEFAULT_TOWER_W: f64 = 75.0;
-		pub const DEFAULT_TOWER_H: f64 = 100.0;
-		
-		pub const NUMBER_OF_TOWERS: usize = 2;
-		pub const TOWER_SPRITE_LIST: [&'static str; NUMBER_OF_TOWERS] =["jar.png", "box.png"];
+		pub const NUMBER_OF_TOWERS: usize = 3;
+		pub const TOWER_SPRITE_LIST: [&'static str; NUMBER_OF_TOWERS] =["jar.png", "box.png", "fence.png"];
 		pub const TOWER_PRICE_LIST: [[u32;4];NUMBER_OF_TOWERS] = [
 				[2,0,0,2],
 				[0,4,0,0],
+				[0,0,5,0],
 			];
-		pub const TOWER_BASE_HEALTH_LIST: [f64;2] = [60.0, 200.0];
-		pub const TOWER_BASE_ATTACK_RATIO_LIST: [f64;2] = [1.0, 1.0];
-		pub const TOWER_BASE_ATTACK_LIST: [f64;2] = [5.0, 10.0];
+		pub const TOWER_SIZE_LIST: [(f64,f64);NUMBER_OF_TOWERS] = [(70.0,100.0),(75.0,100.0),(75.0,50.0) ];
+		pub const TOWER_BASE_HEALTH_LIST: [f64;NUMBER_OF_TOWERS] = [60.0, 100.0, 200.0];
+		pub const TOWER_BASE_ATTACK_RATIO_LIST: [f64;NUMBER_OF_TOWERS] = [1.0, 1.5, 100.0];
+		pub const TOWER_BASE_ATTACK_LIST: [f64;NUMBER_OF_TOWERS] = [6.0, 5.0, 0.0];
+		pub const TOWER_BASE_RANGE_LIST: [f64;NUMBER_OF_TOWERS] = [300.0, 140.0, 0.0];
 		
 	// Projectile
 		pub const PROJECTILE_SPRITE_LIST: [&'static str; 2] = ["projectile_i.png", "projectile_i.png"];

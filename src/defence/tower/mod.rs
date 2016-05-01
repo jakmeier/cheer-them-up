@@ -8,6 +8,8 @@ pub mod basic_tower;
 pub mod aoe_tower;
 
 use constants::*;
+use super::projectile::Projectile;
+use super::enemy::Enemy;
 
 use piston_window::*;
 use gfx_device_gl::Resources;
@@ -18,24 +20,22 @@ use gfx_graphics::GfxGraphics;
 struct TowerAttributes {
 	x: f64, y: f64,
 	max_health: f64, health: f64,
+	reload_time: f64, cooldown: f64, 
+	attack_power: f64,
 }
 
 pub trait Tower{
 	fn get_tower_type_id(&self) -> usize;
 	fn get(&self) -> &TowerAttributes;
 	fn get_mut(&mut self) -> &mut TowerAttributes;
-	fn get_coordinates(&self) -> (f64, f64) {
-		(self.get().x, self.get().y)
-	}
+	fn get_coordinates(&self) -> (f64, f64) {(self.get().x, self.get().y)}
 	fn set_coordinates(&mut self, x:f64, y:f64){
 		self.get_mut().x = x;
 		self.get_mut().y = y;
 	}	
 	//fn apply_tower_upgrades(&mut self, TowerUpgrades tu);
 		
-	fn get_tower_size(&self) -> (f64, f64) {
-		(DEFAULT_TOWER_W, DEFAULT_TOWER_H)
-	}
+	fn get_tower_size(&self) -> (f64, f64) { (DEFAULT_TOWER_W, DEFAULT_TOWER_H) }
 	fn attack_tower(&mut self, power: f64) {
 		let hp = self.get().health - power;
 		if hp < 0.0 {  self.get_mut().health = 0.0;}
@@ -55,9 +55,15 @@ pub trait Tower{
 			rectangle([0.0, 0.8, 0.0, 1.0], [0.0, -HEALTH_BAR_HEIGHT, w*dx*hp_ratio, HEALTH_BAR_HEIGHT], view.trans(x*dx,y*dy), g );
 		}
 	}
-	fn update(&mut self, dt: f64 ) {
-		//TODO
+	fn update(&mut self, dt: f64, enemies: &mut Vec<Box<Enemy>>) -> Option<Projectile> {
+		self.get_mut().cooldown += dt;
+		if self.get().cooldown > self.get().reload_time {
+			self.get_mut().cooldown = 0.0;
+			self.perform_attack(enemies)
+		}
+		else { None }
 	}
+	fn perform_attack(&self, &mut Vec<Box<Enemy>>) -> Option<Projectile> ;
 	fn is_dead(&self) -> bool {
 		self.get().health <= 0.0
 	}

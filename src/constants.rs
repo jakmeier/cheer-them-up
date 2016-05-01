@@ -68,4 +68,11 @@ pub const UNIVERSITY_PRICE: [u32;4] = [5,5,5,5];
 				[2,0,0,2],
 				[0,4,0,0],
 			];
+		pub const TOWER_BASE_HEALTH_LIST: [f64;2] = [60.0, 200.0];
+		pub const TOWER_BASE_ATTACK_RATIO_LIST: [f64;2] = [1.0, 1.0];
+		pub const TOWER_BASE_ATTACK_LIST: [f64;2] = [5.0, 10.0];
 		
+	// Projectile
+		pub const PROJECTILE_SPRITE_LIST: [&'static str; 2] = ["projectile_i.png", "projectile_i.png"];
+		pub const PROJECTILE_VELOCITY: f64 = 1000.0;
+		pub const PROJECTILE_SIZE: (f64,f64) = (40.0,20.0);

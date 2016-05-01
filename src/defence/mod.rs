@@ -13,12 +13,13 @@ use DrawRequest;
 
 mod enemy;
 mod tower;
+mod projectile;
 mod shop;
 mod collision;
 
 use self::enemy::*;
 use self::tower::*;
-use self::collision::*;
+use self::projectile::Projectile;
 
 use super::piston_window::*;
 use super::gfx_device_gl::Resources;
@@ -40,7 +41,6 @@ pub struct Defence {
 	hp: u32,
 	width: f64, height: f64, dx: f64, dy: f64,
 	shop: shop::Shop,
-	//background: Texture<Resources>,
 	general_sprites: Vec<Texture<Resources>>,
 	shortest_path_map: JkmShortestPathMap,
 	towers: Vec<Box<Tower>>,
@@ -48,7 +48,8 @@ pub struct Defence {
 	tower_sprites: Vec<Texture<Resources>>,
 	enemies: Vec<Box<Enemy>>,
 	enemy_sprites: Vec<Texture<Resources>>,
-	//projectile datastructures and sprites
+	projectiles: Vec<Projectile>,
+	projectile_sprites: Vec<Texture<Resources>>,
 }
 
 impl Defence {
@@ -59,18 +60,10 @@ impl Defence {
 		let mut spm = JkmShortestPathMap::new( (width / 2.0, 0.0), (width / 2.0 , bf_height - STD_ENEMY_H ),(0.0, 0.0, width - STD_ENEMY_W, bf_height- STD_ENEMY_H) );
 		spm.add_map_border();
 		
-		/*let img = find_folder::Search::ParentsThenKids(3, 3).for_folder("img").unwrap();
-		let folder = img.join("rainbow_road_from_hell.png");
-		let background = Texture::from_path(
-			&mut *w.factory.borrow_mut(),
-			&folder,
-			Flip::None,
-			&TextureSettings::new()
-		)
-        .unwrap();*/
-		
 		let mut enemies: Vec<Box<Enemy>> = Vec::new();
 		enemies.push( Box::new(enemy::basic_enemy::BasicEnemy::new( width/2.0, 0.0) ) );
+		
+		let pros = Vec::new();
 		
 		let towers = Vec::new();
 		
@@ -104,14 +97,14 @@ impl Defence {
 			tower_sprites.push(sprite);
 		}
 		
-		//load enemy sprites
-		let mut enemy_sprites: Vec<Texture<Resources>> = Vec::new();
-		let sprite_names = ENEMY_SPRITE_LIST;
-		let enemy_folder = find_folder::Search::ParentsThenKids(3, 3).for_folder("enemies").unwrap();
+		//load projectile sprites
+		let mut projectile_sprites: Vec<Texture<Resources>> = Vec::new();
+		let sprite_names = PROJECTILE_SPRITE_LIST;
+		let projectile_folder = find_folder::Search::ParentsThenKids(3, 3).for_folder("projectiles").unwrap();
 		for s in sprite_names.iter() {
-			let f = enemy_folder.join(s);
+			let f = projectile_folder.join(s);
 			let sprite = Texture::from_path( &mut *w.factory.borrow_mut(), &f, Flip::None, &TextureSettings::new()).unwrap();
-			enemy_sprites.push(sprite);
+			projectile_sprites.push(sprite);
 		}
 		
 		//create tower templates
@@ -131,6 +124,8 @@ impl Defence {
 			tower_sprites: tower_sprites,
 			enemies: enemies,
 			enemy_sprites: enemy_sprites,
+			projectiles: pros, 
+			projectile_sprites: projectile_sprites,
 		}
 	}
 	pub fn on_update(&mut self, upd: UpdateArgs) {
@@ -149,6 +144,21 @@ impl Defence {
 		while let Some(i) = to_remove.pop() {
 			self.towers.swap_remove(i);
 		}
+		for t in self.towers.iter_mut() {
+			if let Some(p) = t.update(upd.dt, &mut self.enemies){
+				self.projectiles.push(p);
+			}
+		}
+		
+		// projectiles 
+		let mut to_remove = Vec::new();
+		for (i, p) in self.projectiles.iter_mut().enumerate() {
+			p.update(upd.dt, &mut self.enemies);
+			if p.is_dead() { to_remove.push(i); }
+		}
+		while let Some(i) = to_remove.pop() {
+			self.projectiles.swap_remove(i);
+		}
 		
 		// enemies
 		if map_changed { 
@@ -156,8 +166,13 @@ impl Defence {
 				e.refresh_destination(&self.shortest_path_map);
 			}
 		}
-		for e in self.enemies.iter_mut() {
+		let mut to_remove = Vec::new();
+		for (i, e) in self.enemies.iter_mut().enumerate() {
 			e.update(upd.dt, &self.shortest_path_map, &mut self.towers);
+			if e.is_dead() { to_remove.push(i); }
+		}
+		while let Some(i) = to_remove.pop() {
+			self.enemies.swap_remove(i);
 		}
 		
 	}
@@ -230,6 +245,9 @@ impl Drawable for Defence {
 		}
 		
 		// projectiles
+		for p in self.projectiles.iter() {
+			p.draw(g, view, dx, dy, &self.projectile_sprites);
+		}
 		
 		// shop
 		let draw_req = self.shop.draw(g, view.trans(0.0, battlefield_h), w, h - battlefield_h, [mouse[0], mouse[1] - battlefield_h], &self.tower_sprites, dx, dy);

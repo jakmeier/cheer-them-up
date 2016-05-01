@@ -1,6 +1,6 @@
 [package]
 name = "multy_task"
-version = "0.3.5"
+version = "0.4.0"
 authors = ["Jakob Meier <jakobmeier@bluewin.ch>"]
 
 [lib]

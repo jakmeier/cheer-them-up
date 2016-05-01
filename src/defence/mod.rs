@@ -16,6 +16,7 @@ mod tower;
 mod projectile;
 mod shop;
 mod collision;
+mod controller;
 
 use self::enemy::*;
 use self::tower::*;
@@ -38,6 +39,7 @@ pub enum DefenceUserInteraction{
 /// width and height are not related to the actual drawn size, they only define the size of the battle field, i.e. how many objects can fit on it.
 /// dx and dy store the amount of pixels that are drawn per width / height for the entire module and are updated whenever draw() is called
 pub struct Defence {
+	controller: controller::Ctrl,
 	hp: u32,
 	width: f64, height: f64, dx: f64, dy: f64,
 	shop: shop::Shop,
@@ -55,13 +57,13 @@ pub struct Defence {
 impl Defence {
 	/// width and height are not related to the actual drawn size, they only define the size of the battle field, i.e. how many objects can fit on it.
 	pub fn new (w: &PistonWindow, hp: u32, width: f64, height: f64) -> Defence {
+		let controller = controller::Ctrl::new(width/2.0, 0.0);
 		
 		let bf_height = height * BF_SHOP_SPLIT_RATIO;
 		let mut spm = JkmShortestPathMap::new( (width / 2.0, 0.0), (width / 2.0 , bf_height - STD_ENEMY_H ),(0.0, 0.0, width - STD_ENEMY_W, bf_height- STD_ENEMY_H) );
 		spm.add_map_border();
 		
-		let mut enemies: Vec<Box<Enemy>> = Vec::new();
-		enemies.push( Box::new(enemy::basic_enemy::BasicEnemy::new( width/2.0, 0.0) ) );
+		let enemies: Vec<Box<Enemy>> = Vec::new();
 		
 		let pros = Vec::new();
 		
@@ -114,6 +116,7 @@ impl Defence {
 		];
 		
 		Defence {
+			controller: controller,
 			hp: hp,
 			width: width, height: height, dx: 1.0, dy: 1.0,
 			shop: shop::Shop::new(),
@@ -129,6 +132,9 @@ impl Defence {
 		}
 	}
 	pub fn on_update(&mut self, upd: UpdateArgs) {
+		
+		// enemy creation
+		self.controller.update(upd.dt, &mut self.enemies);
 		
 		// towers
 		let mut to_remove = Vec::new();

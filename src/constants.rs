@@ -7,7 +7,7 @@ pub const HEALTH_BAR_HEIGHT: f64 = 8.0;
 pub const BATTLEFIELD_UI_SCALE: f64 = 1.0;
 
 //Meta
-pub const START_RESSOURCES: [u32;4] = [20,20,20,20];
+pub const START_RESSOURCES: [u32;4] = [50,50,50,50];
 pub const EPS: f64 = 1.0/1048576.0;
 
 // Map
@@ -15,6 +15,9 @@ pub const CONCRETE_PRICE: [u32;4] = [0,0,3,0];
 pub const IRON_FACTORY_PRICE: [u32;4] = [0,10,5,0];
 pub const IRON_FACTORY_UPGRADE_PRICE: [u32;4] = [1,0,1,0];
 pub const UNIVERSITY_PRICE: [u32;4] = [5,5,5,5];
+pub const BLACKSMITH_PRICE: [u32;4] = [0,5,5,0];
+pub const BANK_PRICE: [u32;4] = [5,5,0,0];
+pub const ORACLE_PRICE: [u32;4] = [0,0,0,5];
 
 // Defence
 	//General

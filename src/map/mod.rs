@@ -40,8 +40,10 @@ pub enum MapUserInteraction{
 pub struct Map {
 	cols: usize, rows: usize,
 	land_matrix: Vec<Land>,
-	land_sprites: [Texture<Resources>; LAND_SPRITES_COUNT ],
-	button_sprites: [Texture<Resources>; BUTTON_SPRITES_COUNT ],
+//	land_sprites: [Texture<Resources>; LAND_SPRITES_COUNT ],
+	land_sprites: Vec<Texture<Resources>>,
+//	button_sprites: [Texture<Resources>; BUTTON_SPRITES_COUNT ],
+	button_sprites: Vec<Texture<Resources>>,
 	font: Glyphs,
 }
 
@@ -51,216 +53,42 @@ impl Map{
 		
 		let mut lands: Vec<Land> = Vec::new();
 		
-		let img = find_folder::Search::ParentsThenKids(3, 3).for_folder("img").unwrap();
-		let folder = img.join("grass.png");
-		let grass = Texture::from_path(
-			&mut *w.factory.borrow_mut(),
-			&folder,
-			Flip::None,
-			&TextureSettings::new()
-		)
-        .unwrap();
 		
-		let tree_img = find_folder::Search::ParentsThenKids(3, 3).for_folder("trees").unwrap();
-		let folder = tree_img.join("tree_a_empty.png");
-		let tree_a_0 = Texture::from_path(
-			&mut *w.factory.borrow_mut(),
-			&folder,
-			Flip::None,
-			&TextureSettings::new()
-		)
-        .unwrap();
+		// Land sprites
+		let mut land_sprites: Vec<Texture<Resources>> = Vec::new();
+		let sprite_names = ["grass.png", 
+							"tree_a_empty.png", "tree_a_almost_empty.png", "tree_a_almost_full.png", "tree_a_full.png", 
+							"tree_b_empty.png", "tree_b_almost_empty.png", "tree_b_almost_full.png", "tree_b_full.png",
+							"industry.png", "add_coins.png", "add_wood.png", "add_iron.png", "add_crystal.png", 
+							"university_i.png", "university_ii.png", "university_iii.png", "university_iv.png",
+							"blacksmith.png", "bank.png", "magic_stones.png",
+							
+							] ;
+		let folder = find_folder::Search::ParentsThenKids(3, 3).for_folder("map").unwrap();
+		for s in sprite_names.iter() {
+			let f = folder.join(s);
+			let sprite = Texture::from_path( &mut *w.factory.borrow_mut(), &f, Flip::None, &TextureSettings::new()).unwrap();
+			land_sprites.push(sprite);
+		}
 		
-		let folder = tree_img.join("tree_a_almost_empty.png");
-		let tree_a_1 = Texture::from_path(
-			&mut *w.factory.borrow_mut(),
-			&folder,
-			Flip::None,
-			&TextureSettings::new()
-		)
-        .unwrap();
+		//		Button Sprites
 		
-		let folder = tree_img.join("tree_a_almost_full.png");
-		let tree_a_2 = Texture::from_path(
-			&mut *w.factory.borrow_mut(),
-			&folder,
-			Flip::None,
-			&TextureSettings::new()
-		)
-        .unwrap();
-		
-		let folder = tree_img.join("tree_a_full.png");
-		let tree_a_3 = Texture::from_path(
-			&mut *w.factory.borrow_mut(),
-			&folder,
-			Flip::None,
-			&TextureSettings::new()
-		)
-        .unwrap();
-		
-		let folder = tree_img.join("tree_b_empty.png");
-		let tree_b_0 = Texture::from_path(
-			&mut *w.factory.borrow_mut(),
-			&folder,
-			Flip::None,
-			&TextureSettings::new()
-		)
-        .unwrap();
-		
-		let folder = tree_img.join("tree_b_almost_empty.png");
-		let tree_b_1 = Texture::from_path(
-			&mut *w.factory.borrow_mut(),
-			&folder,
-			Flip::None,
-			&TextureSettings::new()
-		)
-        .unwrap();
-		
-		let folder = tree_img.join("tree_b_almost_full.png");
-		let tree_b_2 = Texture::from_path(
-			&mut *w.factory.borrow_mut(),
-			&folder,
-			Flip::None,
-			&TextureSettings::new()
-		)
-        .unwrap();
-		
-		let folder = tree_img.join("tree_b_full.png");
-		let tree_b_3 = Texture::from_path(
-			&mut *w.factory.borrow_mut(),
-			&folder,
-			Flip::None,
-			&TextureSettings::new()
-		)
-        .unwrap();
-		
-		let folder = img.join("industry.png");
-		let industry = Texture::from_path(
-			&mut *w.factory.borrow_mut(),
-			&folder,
-			Flip::None,
-			&TextureSettings::new()
-		)
-        .unwrap();
-		
-		let folder = img.join("add_coins.png");
-		let add_coins = Texture::from_path(
-			&mut *w.factory.borrow_mut(),
-			&folder,
-			Flip::None,
-			&TextureSettings::new()
-		)
-        .unwrap();
-		
-		let folder = img.join("add_wood.png");
-		let add_wood = Texture::from_path(
-			&mut *w.factory.borrow_mut(),
-			&folder,
-			Flip::None,
-			&TextureSettings::new()
-		)
-        .unwrap();
-		
-		let folder = img.join("add_iron.png");
-		let add_iron = Texture::from_path(
-			&mut *w.factory.borrow_mut(),
-			&folder,
-			Flip::None,
-			&TextureSettings::new()
-		)
-        .unwrap();
-		
-		let folder = img.join("add_crystal.png");
-		let add_crystal = Texture::from_path(
-			&mut *w.factory.borrow_mut(),
-			&folder,
-			Flip::None,
-			&TextureSettings::new()
-		)
-        .unwrap();
-		
-		let folder = img.join("bremen.png");
-		let bremen = Texture::from_path(
-			&mut *w.factory.borrow_mut(),
-			&folder,
-			Flip::None,
-			&TextureSettings::new()
-		)
-        .unwrap();
-		
-		let land_sprite_array = [grass, tree_a_0, tree_a_1, tree_a_2, tree_a_3, tree_b_0, tree_b_1, tree_b_2, tree_b_3, industry, 
-								add_coins, add_wood, add_iron, add_crystal, bremen];
-		
-		/*		Button Sprites
-		
-		*/
-		
-		
-		let folder = img.join("buy.png");
-		let buy = Texture::from_path(
-			&mut *w.factory.borrow_mut(),
-			&folder,
-			Flip::None,
-			&TextureSettings::new()
-		)
-        .unwrap();
-		
-		let folder = img.join("sell.png");
-		let sell = Texture::from_path(
-			&mut *w.factory.borrow_mut(),
-			&folder,
-			Flip::None,
-			&TextureSettings::new()
-		)
-        .unwrap();
-		
-		let folder = img.join("concrete.png");
-		let concrete = Texture::from_path(
-			&mut *w.factory.borrow_mut(),
-			&folder,
-			Flip::None,
-			&TextureSettings::new()
-		)
-        .unwrap();
-		
-		let folder = img.join("crane.png");
-		let build_iron_factory = Texture::from_path(
-			&mut *w.factory.borrow_mut(),
-			&folder,
-			Flip::None,
-			&TextureSettings::new()
-		)
-        .unwrap();
-		
-		let folder = img.join("axe.png");
-		let axe = Texture::from_path(
-			&mut *w.factory.borrow_mut(),
-			&folder,
-			Flip::None,
-			&TextureSettings::new()
-		)
-        .unwrap();
-		
-		let folder = img.join("up.png");
-		let upgrade = Texture::from_path(
-			&mut *w.factory.borrow_mut(),
-			&folder,
-			Flip::None,
-			&TextureSettings::new()
-		)
-        .unwrap();
-		
-		let folder = img.join("cap.png");
-		let cap = Texture::from_path(
-			&mut *w.factory.borrow_mut(),
-			&folder,
-			Flip::None,
-			&TextureSettings::new()
-		)
-        .unwrap();
-		
-		let button_sprite_array = [buy, sell, concrete, build_iron_factory, axe, upgrade, cap];
-		
+		let mut button_sprites: Vec<Texture<Resources>> = Vec::new();
+		let sprite_names = [
+							"buy.png", "sell.png",
+							"concrete.png", 
+							"crane.png", 
+							"axe.png", 
+							"up.png",
+							"cap.png",
+							] ;
+		let folder = find_folder::Search::ParentsThenKids(3, 3).for_folder("button").unwrap();
+		for s in sprite_names.iter() {
+			let f = folder.join(s);
+			let sprite = Texture::from_path( &mut *w.factory.borrow_mut(), &f, Flip::None, &TextureSettings::new()).unwrap();
+			button_sprites.push(sprite);
+		}
+	
 		// Font
 		
 		let assets = find_folder::Search::ParentsThenKids(3, 3).for_folder("font").unwrap();
@@ -278,8 +106,8 @@ impl Map{
 		Map{
 			cols: cols, rows: rows,
 			land_matrix: lands,
-			land_sprites: land_sprite_array,
-			button_sprites: button_sprite_array,
+			land_sprites: land_sprites,
+			button_sprites: button_sprites,
 			font: glyphs,
 		}
 	}

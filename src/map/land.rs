@@ -30,7 +30,10 @@ enum LandType {
 	Tree{fir: bool, grow_state: f64},
 	Concreted,
 	IronFactory{level:u32, stored:f64},
-	University,
+	University{level:u32},
+	Blacksmith,
+	Bank{level:u32, stored:f64},
+	Oracle,
 }
 
 pub struct Land {
@@ -103,7 +106,10 @@ impl Land {
 					self.land_type = LandType::IronFactory{level:level, stored: stored_after};
 				}
 			}
-			LandType::University => {}
+			LandType::University{level} => {}
+			LandType::Blacksmith => {}
+			LandType::Bank{..} => {}
+			LandType::Oracle => {}
 		}
 		if refresh_buttons_later {self.refresh_buttons();}
 		None
@@ -111,11 +117,11 @@ impl Land {
 	
 	pub fn draw (&mut self, g: &mut GfxGraphics<Resources, CommandBuffer>, view: math::Matrix2d, sprite_array: &[Texture<Resources>]/*, ref mut font: &mut Glyphs*/){ 
 		//Background, brounish
-		let mut color = [0.305, 0.231, 0.173, 1.0];
+		let color;
 		
 		match self.land_type {
-			LandType::Empty | LandType::Tree{..} => {/* keep value from above */}
-			LandType::Concreted | LandType::IronFactory{..} | LandType::University => { color =  [0.3, 0.3, 0.3, 1.0]}
+			LandType::Empty | LandType::Tree{..} | LandType::Oracle => color = [0.305, 0.231, 0.173, 1.0],
+			_ =>  color =  [0.3, 0.3, 0.3, 1.0],
 		}
 		
 		
@@ -147,11 +153,29 @@ impl Land {
 				let y_scale = self.h/(sprite_h as f64);
 				image(&(sprite_array[9]), view.trans(self.x, self.y).scale(x_scale, y_scale), g);
 			}
-			LandType::University => {
-				let (sprite_w, sprite_h) = sprite_array[14].get_size();
+			LandType::University{level} => {
+				let (sprite_w, sprite_h) = sprite_array[14+level as usize].get_size();
 				let x_scale = self.w/(sprite_w as f64);
 				let y_scale = self.h/(sprite_h as f64);
-				image(&(sprite_array[14]), view.trans(self.x, self.y).scale(x_scale, y_scale), g);
+				image(&(sprite_array[14+level as usize]), view.trans(self.x, self.y).scale(x_scale, y_scale), g);
+			}
+			LandType::Blacksmith => {
+				let (sprite_w, sprite_h) = sprite_array[18].get_size();
+				let x_scale = self.w/(sprite_w as f64);
+				let y_scale = self.h/(sprite_h as f64);
+				image(&(sprite_array[18]), view.trans(self.x, self.y).scale(x_scale, y_scale), g);
+			}
+			LandType::Bank{..} => {
+				let (sprite_w, sprite_h) = sprite_array[19].get_size();
+				let x_scale = self.w/(sprite_w as f64);
+				let y_scale = self.h/(sprite_h as f64);
+				image(&(sprite_array[19]), view.trans(self.x, self.y).scale(x_scale, y_scale), g);
+			}
+			LandType::Oracle => {
+				let (sprite_w, sprite_h) = sprite_array[20].get_size();
+				let x_scale = self.w/(sprite_w as f64);
+				let y_scale = self.h/(sprite_h as f64);
+				image(&(sprite_array[20]), view.trans(self.x, self.y).scale(x_scale, y_scale), g);
 			}
 		}
 		
@@ -315,9 +339,19 @@ impl Land {
 				LandType::IronFactory{level, ..} => {
 					if level < 10 {self.buttons.push((JkmButton::new(0.0, 0.0, (2.0  *self.w / 3.0), (2.0 * self.h/ 3.0), JkmStyle::OuterCircle, [0.1,0.1,0.1,0.9]), ButtonType::UpgradeIronFactory));}
 				}
-				LandType::University => {
+				LandType::University{..} => {
 					
 				}
+				LandType::Blacksmith => {
+				
+				}
+				LandType::Bank{..} => {
+				
+				}
+				LandType::Oracle => {
+				
+				}
+				
 			}
 			self.buttons.push((JkmButton::new(0.0, 0.0, (2.0  *self.w / 3.0), (2.0 * self.h/ 3.0), JkmStyle::Rectangle, [0.0,0.0,0.3,0.8]) ,ButtonType::Sell));
 		}
@@ -364,7 +398,7 @@ impl Land {
 		self.refresh_buttons();
 	}
 	pub fn build_university(&mut self){
-		self.land_type = LandType::University;
+		self.land_type = LandType::University{level: 0};
 		self.refresh_buttons();
 	}
 }

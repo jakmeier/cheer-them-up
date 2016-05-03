@@ -8,9 +8,8 @@ mod land;
 
 use self::land::Land;
 use utils::ClickableRectangle;
-use DrawRequest;
+use definitions::{MapUserInteraction, DrawRequest, Drawable, GameState};
 
-use super::Drawable;
 use super::piston_window::*;
 use super::gfx_device_gl::Resources;
 use super::gfx_device_gl::command::CommandBuffer;
@@ -20,26 +19,11 @@ use rand;
 
 // used for initialization of the land sizes, but it should be overwritten before drawing anyway
 const STD_SIZE: f64 = 100.0;
-/// Used by the land module to borrow the sprite array
-pub const LAND_SPRITES_COUNT: usize = 15;
-/// Used by the land module to borrow the sprite array
-pub const BUTTON_SPRITES_COUNT: usize = 7;
-
-/// Used to get messages from a land through the map up to the root of the project.
-pub enum MapUserInteraction{
-	BuyLand{index: u32, price: u32},
-	SellLand{index: u32, price: u32},
-	ConcreteLand{index: u32},
-	BuildIronFactory{index: u32},
-	UpgradeIronFactory{index: u32},
-	AddResources{coins: u32, wood: u32, iron: u32, crystals: u32},
-	BuildUniversity {index: u32},
-}
 
 /// The main data structure for the map.
 pub struct Map {
 	cols: usize, rows: usize,
-	land_matrix: Vec<Land>,
+	pub land_matrix: Vec<Land>,
 //	land_sprites: [Texture<Resources>; LAND_SPRITES_COUNT ],
 	land_sprites: Vec<Texture<Resources>>,
 //	button_sprites: [Texture<Resources>; BUTTON_SPRITES_COUNT ],
@@ -79,8 +63,12 @@ impl Map{
 							"concrete.png", 
 							"crane.png", 
 							"axe.png", 
-							"up.png",
+							"up.png", //5
 							"cap.png",
+							"cog.png",
+							"hammer.png",
+							"dream_catcher.png",
+							"money_bag.png", //10
 							] ;
 		let folder = find_folder::Search::ParentsThenKids(3, 3).for_folder("button").unwrap();
 		for s in sprite_names.iter() {
@@ -96,10 +84,11 @@ impl Map{
 		let factory = w.factory.borrow().clone();
 		let glyphs = Glyphs::new(font, factory).unwrap();
 		
+		let fake_init_state = GameState::new();
 		for i in 0..cols {
 			for j in 0..rows {
 				let rn = rand::random::<u32>();
-				lands.push( Land::new( i as f64 * STD_SIZE, j as f64 * STD_SIZE, STD_SIZE, STD_SIZE, 2 + (rn % 5) ) );
+				lands.push( Land::new( i as f64 * STD_SIZE, j as f64 * STD_SIZE, STD_SIZE, STD_SIZE, 2 + (rn % 5), &fake_init_state ) );
 			}
 		}
 		
@@ -114,11 +103,11 @@ impl Map{
 	
 	/// Must be called in the update loop.
 	/// Returns the produced resources. Only whole numbers can be produced, fractions are stored within the map. To be specific, the vlaues are saved in the land structures.
-	pub fn on_update(&mut self, upd: UpdateArgs) -> [u32; 4] {
+	pub fn on_update(&mut self, upd: UpdateArgs, state: &GameState) -> [u32; 4] {
 		let mut iron_produced = 0;
 		let rn = rand::random::<u32>();
 		for mut l in self.land_matrix.iter_mut() {
-			match l.update(upd.dt, rn) {
+			match l.update(upd.dt, rn, state) {
 				Some(MapUserInteraction::AddResources{iron, ..}) => { iron_produced += iron}
 				_=> {}
 			}
@@ -128,19 +117,24 @@ impl Map{
 	/// Checks if the current click was on clickable object in the map. 
 	/// Coordinates are relative to the map.
 	/// Can return a MapUserInteraction to interact with the root of the game.
-	pub fn on_click(&mut self, x: f64, y: f64) -> Option<MapUserInteraction> {
+	pub fn on_click(&mut self, x: f64, y: f64, state: &GameState) -> Option<MapUserInteraction> {
 		//check if the click is on a currently shown button_sprite_array
 		for i in 0..self.rows {
 			for j in 0..self.cols {
-				match self.land_matrix[i * self.cols + j].click_buttons(x,y) {
+				match self.land_matrix[i * self.cols + j].click_buttons(x,y, state) {
 					Some(MapUserInteraction::BuyLand{price, ..}) => {	return Some(MapUserInteraction::BuyLand{index: ((i as usize * self.cols + j)as u32), price: price}); }
 					Some(MapUserInteraction::SellLand{price, ..}) => { return Some(MapUserInteraction::SellLand{index: ((i as usize * self.cols + j)as u32), price: price}); }
 					Some(MapUserInteraction::ConcreteLand{..}) => {return Some(MapUserInteraction::ConcreteLand{index:((i as usize * self.cols + j)as u32)}); }
 					Some(MapUserInteraction::BuildIronFactory{..}) => {return Some(MapUserInteraction::BuildIronFactory{index:((i as usize * self.cols + j)as u32)}); }
-					Some(MapUserInteraction::UpgradeIronFactory{..}) => {return Some(MapUserInteraction::UpgradeIronFactory{index:((i as usize * self.cols + j)as u32)}); }
+					Some(MapUserInteraction::UpgradeIronFactory{level, ..}) => {return Some(MapUserInteraction::UpgradeIronFactory{index:((i as usize * self.cols + j)as u32), level: level}); }
 					Some(MapUserInteraction::AddResources{coins, wood, iron, crystals}) => {return Some(MapUserInteraction::AddResources{coins:coins, wood:wood, iron:iron, crystals:crystals}); }
 					Some(MapUserInteraction::BuildUniversity{..}) => {return Some(MapUserInteraction::BuildUniversity{index:((i as usize * self.cols + j)as u32)}); }
-					_=> {}
+					Some(MapUserInteraction::UpgradeUniversity{level, ..}) => {return Some(MapUserInteraction::UpgradeUniversity{index:((i as usize * self.cols + j)as u32), level: level}); }
+					Some(MapUserInteraction::BuildOracle{..}) => {return Some(MapUserInteraction::BuildOracle{index:((i as usize * self.cols + j)as u32)}); }
+					Some(MapUserInteraction::BuildBlacksmith{..}) => {return Some(MapUserInteraction::BuildBlacksmith{index:((i as usize * self.cols + j)as u32)}); }
+					Some(MapUserInteraction::BuildBank{..}) => {return Some(MapUserInteraction::BuildBank{index:((i as usize * self.cols + j)as u32)}); }
+					Some(upgrade) => { return Some(upgrade); }
+					None => {}
 				}
 			}
 		}
@@ -153,6 +147,12 @@ impl Map{
 		None
 	}
 
+	pub fn update_all_buttons(&mut self, upgrades: &GameState) {
+		for land in self.land_matrix.iter_mut() {
+			land.refresh_buttons(upgrades);
+		}
+	}
+	
 }
 
 impl Drawable for Map {
@@ -190,26 +190,5 @@ impl Drawable for Map {
 		}
 		result
 	}	
-}
-
-impl Map { // interface for game state updates
-	pub fn buy_land(&mut self, index: u32){
-		self.land_matrix[index as usize].buy();
-	}
-	pub fn sell_land(&mut self, index: u32) -> bool {
-		self.land_matrix[index as usize].sell()
-	}
-	pub fn concrete_land(&mut self, index: u32) {
-		self.land_matrix[index as usize].concrete();
-	}
-	pub fn build_iron_factory_on_land(&mut self, index: u32) -> bool {
-		self.land_matrix[index as usize].build_iron_factory()
-	}
-	pub fn build_university(&mut self, index: u32) {
-		self.land_matrix[index as usize].build_university();
-	}
-	pub fn upgrade_iron_factory(&mut self, index: u32) {
-		self.land_matrix[index as usize].upgrade_iron_factory();
-	}
 }
 

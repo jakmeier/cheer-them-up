@@ -1,14 +1,12 @@
 //! Manages the states and the drawing of a rock-paper-scissors game. Input, turn-timing as well as rewards are not manged in this module, but it offers an API so it can be implemented easily.
 
 use super::{PersistentWinnerState, AbsolutelyChangeableState, AI};
-use super::super::Drawable;
+use definitions::{Drawable, DrawRequest};
 use super::super::piston_window::*;
 use super::super::gfx_device_gl::Resources;
 use super::super::gfx_device_gl::command::CommandBuffer;
 use super::super::gfx_graphics::GfxGraphics;
 use super::super::find_folder;
-
-use DrawRequest;
 
 use rand;
 use rand::Rng;

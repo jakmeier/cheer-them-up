@@ -6,15 +6,13 @@
 //! Can also display the resources as a header bar. 
 //! Additional functionalities: So far only drawing a price on a location on the screen
 
-use super::Drawable;
+use definitions::{Drawable,DrawRequest};
 use super::piston_window::*;
 use super::gfx_device_gl::Resources;
 use super::gfx_device_gl::command::CommandBuffer;
 use super::gfx_graphics::GfxGraphics;
 use super::find_folder;
 use constants::START_RESSOURCES;
-
-use DrawRequest;
 
 pub struct CashHeader{
 	coins: u32, wood: u32, iron: u32, crystals: u32,

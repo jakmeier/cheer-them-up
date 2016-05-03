@@ -12,12 +12,42 @@ pub const EPS: f64 = 1.0/1048576.0;
 
 // Map
 pub const CONCRETE_PRICE: [u32;4] = [0,0,3,0];
+
 pub const IRON_FACTORY_PRICE: [u32;4] = [0,10,5,0];
-pub const IRON_FACTORY_UPGRADE_PRICE: [u32;4] = [1,0,1,0];
+pub const IRON_FACTORY_UPGRADES: usize = 10;
+pub const IRON_FACTORY_UPGRADE_PRICE: [[u32;4]; IRON_FACTORY_UPGRADES] = 
+	[
+		[0,3,0,1],
+		[0,5,0,2],
+		[0,7,0,3],
+		[0,8,0,5],
+		[0,10,0,7],
+		[0,13,0,8],
+		[0,15,0,10],
+		[0,25,0,15],
+		[0,30,0,20],
+		[0,40,0,25],
+	];
+
 pub const UNIVERSITY_PRICE: [u32;4] = [5,5,5,5];
+pub const UNIVERSITY_UPGRADES: usize = 4;
+pub const UPGRADE_UNIVERSITY_PRICE: [[u32;4]; UNIVERSITY_UPGRADES] = 
+	[	
+		[10,0,0,5],
+		[15,0,0,10],
+		[30,0,0,20],
+		[50,0,0,50],
+	];
+
 pub const BLACKSMITH_PRICE: [u32;4] = [0,5,5,0];
+
 pub const BANK_PRICE: [u32;4] = [5,5,0,0];
+
 pub const ORACLE_PRICE: [u32;4] = [0,0,0,5];
+
+// UPGRADES
+pub const INDUSTRIALISATION_PRICE: [u32;4] = [5,5,5,5];
+
 
 // Defence
 	//General

@@ -6,8 +6,7 @@
 //! Upgrades which are specific to an instance of a tower will not be available in here, those are handled in the tower module itself.
 
 use constants::*;
-use DrawRequest;
-use super::DefenceUserInteraction;
+use definitions::{DrawRequest, DefenceUserInteraction};
 
 use piston_window::*;
 use gfx_device_gl::Resources;

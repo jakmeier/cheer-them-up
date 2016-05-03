@@ -8,8 +8,7 @@ extern crate jkm_shortest_path_map;
 use self::jkm_shortest_path_map::JkmShortestPathMap;
 
 use constants::*;
-use super::Drawable;
-use DrawRequest;
+use definitions::{Drawable, DrawRequest, DefenceUserInteraction};
 
 mod enemy;
 mod tower;
@@ -29,12 +28,6 @@ use super::gfx_graphics::GfxGraphics;
 use super::find_folder;
 
 
-
-
-/// Used to communicate with the root of the project. Mostly to request constructions and upgrades that are only allowed if there are enough resources.
-pub enum DefenceUserInteraction{
-	BuyTower{x: f64, y:f64, tower_id: usize},
-}
 
 /// width and height are not related to the actual drawn size, they only define the size of the battle field, i.e. how many objects can fit on it.
 /// dx and dy store the amount of pixels that are drawn per width / height for the entire module and are updated whenever draw() is called

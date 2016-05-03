@@ -6,14 +6,13 @@
 //! What resources will be rewarded can be set in the constructor.
 
 use super::{AI, ClickableGame};
-use super::super::Drawable;
+use definitions::{Drawable, DrawRequest};
 use super::super::piston_window::*;
 use super::super::gfx_device_gl::Resources;
 use super::super::gfx_device_gl::command::CommandBuffer;
 use super::super::gfx_graphics::GfxGraphics;
 use super::super::find_folder;
 
-use DrawRequest;
 use rand;
 
 pub struct TicTacToeData {

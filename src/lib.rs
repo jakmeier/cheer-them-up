@@ -8,6 +8,7 @@ pub mod map;
 pub mod utils;
 pub mod defence;
 pub mod constants;
+pub mod definitions;
 
 extern crate piston_window;
 extern crate gfx_device_gl;
@@ -19,31 +20,11 @@ extern crate rand;
 
 
 use micro::{PersistentWinnerState, AbsolutelyChangeableState, AI, ClickableGame};
-use map::MapUserInteraction;
-use defence::DefenceUserInteraction;
 use piston_window::*;
 
 use constants::*;
+use definitions::{DrawRequest, Drawable, DefenceUserInteraction, MapUserInteraction, GameState};
 
-/// Message used when a module needs to draw something and it lacks information from another module.
-pub enum DrawRequest{
-	/// Draws at mouse position.
-	ResourcePrice{price: [u32;4], coordinates: math::Matrix2d, font_size:u32},
-	/// Draws at mouse position.
-	DrawTower{tower_id: usize},
-}
-
-/// Draws the object within the given area. Scaling is managed internally.
-pub trait Drawable {
-	fn draw(&mut self, g: &mut gfx_graphics::GfxGraphics<gfx_device_gl::Resources, gfx_device_gl::command::CommandBuffer>,
-		view: math::Matrix2d,
-		draw_state: DrawState,
-		w: f64, h:f64,
-		mouse: [f64;2],
-		)
-		-> Option<DrawRequest>
-		;
-}
 
 /// Root structure for the game. It contains all the mini games (micro) as well as the higher level game parts (macro) and connects them.
 pub struct Game {
@@ -59,6 +40,7 @@ pub struct Game {
 		clock: f64,
 		coin_paid: bool,
 		cash: cash::CashHeader,
+		state: GameState,
 	}
 	
 	impl Game {
@@ -85,6 +67,7 @@ pub struct Game {
 				clock: 0.0,
 				coin_paid: false,
 				cash: cash::CashHeader::new(w),
+				state: GameState::new(),
 			}
 		}
 		pub fn on_update(&mut self, upd: UpdateArgs) {
@@ -104,7 +87,7 @@ pub struct Game {
 				if self.mini_game.get_winner() == 1 {self.cash.add_coins(1); }
 				self.coin_paid = true;
 			}
-			let resources_produced = self.map.on_update(upd);
+			let resources_produced = self.map.on_update(upd, &self.state);
 			self.cash.add_coins(resources_produced[0]);
 			self.cash.add_wood(resources_produced[1]);
 			self.cash.add_iron(resources_produced[2]);
@@ -176,7 +159,7 @@ pub struct Game {
 					match but {
 						Button::Mouse(MouseButton::Left) => {
 								//map
-								match self.map.on_click(self.mouse_x, self.mouse_y - self.header_height){
+								match self.map.on_click(self.mouse_x, self.mouse_y - self.header_height, &self.state){
 									Some(msg) => { self.handle_map_interaction(msg) }
 									None => {}
 								}
@@ -203,42 +186,69 @@ pub struct Game {
 			match msg {
 				MapUserInteraction::BuyLand{index, price} => {
 					if self.cash.take_coins(price){
-						self.map.buy_land(index);
+						self.map.land_matrix[index as usize].buy(&self.state);	
 					}
 				}
 				MapUserInteraction::SellLand{index, price} => {
-					if self.map.sell_land(index) {
+					if self.map.land_matrix[index as usize].sell(&self.state) {
 						self.cash.add_coins(price);
 					}
 				}
 				MapUserInteraction::ConcreteLand{index} => {
 					if self.cash.test_and_pay(CONCRETE_PRICE){
-						self.map.concrete_land(index);
+						self.map.land_matrix[index as usize].concrete(&self.state);	
 					}
 				}
 				MapUserInteraction::BuildIronFactory{index} => {
 					if self.cash.test_and_pay(IRON_FACTORY_PRICE){
-						if !self.map.build_iron_factory_on_land(index) {
+						if !self.map.land_matrix[index as usize].build_iron_factory(&self.state) {
 							//not concreted yet
 							self.cash.add_resources(IRON_FACTORY_PRICE);
 						}
 					}
 				}
+				MapUserInteraction::UpgradeIronFactory{index, level} => {
+					if self.cash.test_and_pay(IRON_FACTORY_UPGRADE_PRICE[level as usize]){
+						self.map.land_matrix[index as usize].upgrade_iron_factory(&self.state);	
+					}
+				}
 				MapUserInteraction::BuildUniversity{index} => {
 					if self.cash.test_and_pay(UNIVERSITY_PRICE){
-						self.map.build_university(index);	
+						self.map.land_matrix[index as usize].build_university(&self.state);		
 					}
 				}
-				MapUserInteraction::UpgradeIronFactory{index} => {
-					if self.cash.test_and_pay(IRON_FACTORY_UPGRADE_PRICE){
-						self.map.upgrade_iron_factory(index);
+				MapUserInteraction::UpgradeUniversity{index, level} => {
+					if self.cash.test_and_pay(UPGRADE_UNIVERSITY_PRICE[level as usize]){
+						self.map.land_matrix[index as usize].upgrade_university(&self.state);	
 					}
 				}
+				
 				MapUserInteraction::AddResources{coins, wood, iron, crystals} => {
 					self.cash.add_coins(coins);
 					self.cash.add_wood(wood);
 					self.cash.add_iron(iron);
 					self.cash.add_crystals(crystals);
+				}
+				MapUserInteraction::BuildBlacksmith{index} => {
+					if self.cash.test_and_pay(BLACKSMITH_PRICE){
+						self.map.land_matrix[index as usize].build_blacksmith(&self.state);		
+					}
+				}
+				MapUserInteraction::BuildOracle{index} => {
+					if self.cash.test_and_pay(ORACLE_PRICE){
+						self.map.land_matrix[index as usize].build_oracle(&self.state);		
+					}
+				}
+				MapUserInteraction::BuildBank{index} => {
+					if self.cash.test_and_pay(BANK_PRICE){
+						self.map.land_matrix[index as usize].build_bank(&self.state);	
+					}
+				}
+				MapUserInteraction::Industrialise => {
+					if self.cash.test_and_pay(INDUSTRIALISATION_PRICE){
+						self.state.industrialisation = true;	
+						self.map.update_all_buttons(&self.state);
+					}
 				}
 			}
 		}

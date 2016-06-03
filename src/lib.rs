@@ -53,6 +53,8 @@ pub struct Game {
 			let def_split = screen_width/4.0 * 2.5;
 			let x_seperation = def_split * 0.7;
 			
+			let mut state = GameState::new();
+			state.tower_researched[BASIC_TID] = true;
 			
 			Game{	
 				screen_width: screen_width,	screen_height: screen_height,
@@ -67,7 +69,7 @@ pub struct Game {
 				clock: 0.0,
 				coin_paid: false,
 				cash: cash::CashHeader::new(w),
-				state: GameState::new(),
+				state: state,
 			}
 		}
 		pub fn on_update(&mut self, upd: UpdateArgs) {
@@ -113,7 +115,7 @@ pub struct Game {
 					_ => {}
 				}
 				//defence
-				match self.defence.draw(g, c.transform.trans(self.eco_def_split_coordinate, self.header_height), c.draw_state, (self.screen_width - self.eco_def_split_coordinate), (self.screen_height-self.header_height), [self.mouse_x-self.eco_def_split_coordinate, self.mouse_y-self.header_height])
+				match self.defence.draw(g, c.transform.trans(self.eco_def_split_coordinate, self.header_height), c.draw_state, (self.screen_width - self.eco_def_split_coordinate), (self.screen_height-self.header_height), [self.mouse_x-self.eco_def_split_coordinate, self.mouse_y-self.header_height], &self.state)
 				{
 					Some(DrawRequest::ResourcePrice{price, coordinates, font_size}) => {
 						self.cash.draw_resource_price(g, coordinates, c.draw_state, price, font_size);
@@ -165,7 +167,7 @@ pub struct Game {
 								}
 								
 								//defence
-								match self.defence.on_click(self.mouse_x - self.eco_def_split_coordinate, self.mouse_y - self.header_height){
+								match self.defence.on_click(self.mouse_x - self.eco_def_split_coordinate, self.mouse_y - self.header_height, &self.state){
 									Some(msg) => { self.handle_defence_interaction(msg) }
 									None => {}
 								}
@@ -212,6 +214,11 @@ pub struct Game {
 						self.map.land_matrix[index as usize].upgrade_iron_factory(&self.state);	
 					}
 				}
+				MapUserInteraction::UpgradeBank{index, level} => {
+					if self.cash.test_and_pay(BANK_UPGRADE_PRICE[level as usize]){
+						self.map.land_matrix[index as usize].upgrade_bank(&self.state);	
+					}
+				}
 				MapUserInteraction::BuildUniversity{index} => {
 					if self.cash.test_and_pay(UNIVERSITY_PRICE){
 						self.map.land_matrix[index as usize].build_university(&self.state);		
@@ -249,6 +256,20 @@ pub struct Game {
 						self.state.industrialisation = true;	
 						self.map.update_all_buttons(&self.state);
 					}
+				}
+				MapUserInteraction::ResearchEconomy => {
+					if self.cash.test_and_pay(ECONOMY_RESEARCH_PRICE){
+						self.state.economy = true;	
+						self.map.update_all_buttons(&self.state);
+					}
+				}
+				MapUserInteraction::ResearchTower{index} => {
+					if self.cash.test_and_pay(RESEARCH_TOWER_PRICE_LIST[index]){
+						self.state.tower_researched[index] = true;	
+						//self.defence.shop.make_available(index);
+						self.map.update_all_buttons(&self.state);
+					}
+					
 				}
 			}
 		}

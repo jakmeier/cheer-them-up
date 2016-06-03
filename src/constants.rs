@@ -7,7 +7,7 @@ pub const HEALTH_BAR_HEIGHT: f64 = 8.0;
 pub const BATTLEFIELD_UI_SCALE: f64 = 1.0;
 
 //Meta
-pub const START_RESSOURCES: [u32;4] = [50,50,50,50];
+pub const START_RESSOURCES: [u32;4] = [500,500,500,500];
 pub const EPS: f64 = 1.0/1048576.0;
 
 // Map
@@ -30,24 +30,36 @@ pub const IRON_FACTORY_UPGRADE_PRICE: [[u32;4]; IRON_FACTORY_UPGRADES] =
 	];
 
 pub const UNIVERSITY_PRICE: [u32;4] = [5,5,5,5];
-pub const UNIVERSITY_UPGRADES: usize = 4;
+pub const UNIVERSITY_UPGRADES: usize = 3;
 pub const UPGRADE_UNIVERSITY_PRICE: [[u32;4]; UNIVERSITY_UPGRADES] = 
 	[	
 		[10,0,0,5],
 		[15,0,0,10],
 		[30,0,0,20],
-		[50,0,0,50],
 	];
-
 pub const BLACKSMITH_PRICE: [u32;4] = [0,5,5,0];
 
 pub const BANK_PRICE: [u32;4] = [5,5,0,0];
-
+pub const BANK_UPGRADES: usize = 5;
+pub const BANK_UPGRADE_PRICE: [[u32;4]; BANK_UPGRADES] = 
+	[
+		[5,0,0,5],
+		[10,0,0,5],
+		[15,0,0,10],
+		[25,0,0,10],
+		[35,0,0,20],
+	];
 pub const ORACLE_PRICE: [u32;4] = [0,0,0,5];
 
 // UPGRADES
-pub const INDUSTRIALISATION_PRICE: [u32;4] = [5,5,5,5];
-
+pub const INDUSTRIALISATION_PRICE: [u32;4] = [0,5,5,0];
+pub const ECONOMY_RESEARCH_PRICE: [u32;4] = [10,5,5,5];
+pub const RESEARCH_TOWER_PRICE_LIST: [[u32;4]; NUMBER_OF_TOWERS] = 
+	[
+		[0,0,0,0],
+		[0,5,0,0],
+		[0,0,5,0],		
+	];
 
 // Defence
 	//General

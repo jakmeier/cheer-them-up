@@ -8,7 +8,7 @@ extern crate jkm_shortest_path_map;
 use self::jkm_shortest_path_map::JkmShortestPathMap;
 
 use constants::*;
-use definitions::{Drawable, DrawRequest, DefenceUserInteraction};
+use definitions::{Drawable, DrawRequest, DefenceUserInteraction, GameState};
 
 mod enemy;
 mod tower;
@@ -109,11 +109,14 @@ impl Defence {
 			Box::new(wall::Wall::new(0.0, 0.0)),
 		];
 		
+		let shop = shop::Shop::new();
+		//shop.make_available(BASIC_TID);
+		
 		Defence {
 			controller: controller,
 			hp: hp,
 			width: width, height: height, dx: 1.0, dy: 1.0,
-			shop: shop::Shop::new(),
+			shop: shop,
 			general_sprites: general_sprites,
 			shortest_path_map: spm,
 			towers: towers,
@@ -176,8 +179,8 @@ impl Defence {
 		}
 		
 	}
-	pub fn on_click(&mut self, x: f64, y: f64) -> Option<DefenceUserInteraction> {
-		if let Some(DefenceUserInteraction::BuyTower{x: w, y: h, tower_id}) = self.shop.on_click(x, y - BF_SHOP_SPLIT_RATIO * self.height * self.dy) {
+	pub fn on_click(&mut self, x: f64, y: f64, state: &GameState) -> Option<DefenceUserInteraction> {
+		if let Some(DefenceUserInteraction::BuyTower{x: w, y: h, tower_id}) = self.shop.on_click(x, y - BF_SHOP_SPLIT_RATIO * self.height * self.dy, state) {
 			let x = x/self.dx;
 			let y = y/self.dy;
 			if self.valid_tower_place(x,y,w,h) {
@@ -213,9 +216,9 @@ impl Defence {
 	}
 }
 
-impl Drawable for Defence {
+impl Defence {
 	#[allow(unused_variables)]
-	fn draw (&mut self, g: &mut GfxGraphics<Resources, CommandBuffer>, view: math::Matrix2d, draw_state: DrawState, w: f64, h:f64, mouse: [f64;2]) -> Option<DrawRequest> {
+	pub fn draw (&mut self, g: &mut GfxGraphics<Resources, CommandBuffer>, view: math::Matrix2d, draw_state: DrawState, w: f64, h:f64, mouse: [f64;2], state: &GameState) -> Option<DrawRequest> {
 		
 		let dx = w / self.width;
 		let dy = h / self.height;
@@ -250,7 +253,7 @@ impl Drawable for Defence {
 		}
 		
 		// shop
-		let draw_req = self.shop.draw(g, view.trans(0.0, battlefield_h), w, h - battlefield_h, [mouse[0], mouse[1] - battlefield_h], &self.tower_sprites, dx, dy);
+		let draw_req = self.shop.draw(g, view.trans(0.0, battlefield_h), w, h - battlefield_h, [mouse[0], mouse[1] - battlefield_h], &self.tower_sprites, dx, dy, state);
 		match draw_req{
 			Some(DrawRequest::DrawTower{tower_id}) => {
 				self.tower_templates[tower_id].draw(g, view.trans(mouse[0],mouse[1]), [mouse[0] - 10.0, mouse[1]-10.0], dx, dy, &self.tower_sprites);

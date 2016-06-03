@@ -3,6 +3,7 @@
 use piston_window::*;
 use gfx_device_gl;
 use gfx_graphics;
+use constants::*;
 
 /// Message used when a module needs to draw something and it lacks information from another module.
 pub enum DrawRequest{
@@ -31,6 +32,7 @@ pub enum MapUserInteraction{
 	ConcreteLand{index: u32},
 	BuildIronFactory{index: u32},
 	UpgradeIronFactory{index: u32, level: u32},
+	UpgradeBank{index: u32, level: u32},
 	AddResources{coins: u32, wood: u32, iron: u32, crystals: u32},
 	BuildUniversity {index: u32},
 	UpgradeUniversity{index: u32, level: u32},
@@ -38,6 +40,8 @@ pub enum MapUserInteraction{
 	BuildBlacksmith {index: u32},
 	BuildBank {index: u32},
 	Industrialise,
+	ResearchEconomy,
+	ResearchTower{index: usize}, 
 }
 
 /// Used by the defence module to communicate with the root of the project. Mostly to request constructions and upgrades that are only allowed if there are enough resources.
@@ -47,18 +51,18 @@ pub enum DefenceUserInteraction{
 
 /// Stores information about which meta upgrades have been bought already and which have not
 pub struct GameState {
-	// Blacksmith
-	pub aoe_tower: bool, pub wall: bool, pub surprise_eggs: bool,
+	// Towers (from any buildings)
+	pub tower_researched: [bool; NUMBER_OF_TOWERS],
 	// University
-	pub industrialisation: bool, pub chocolate: bool, pub cotton_candy: bool,
+	pub industrialisation: bool, pub economy: bool, pub chocolate: bool, pub cotton_candy: bool,
 	// Oracle
 	pub gold_upgrade: u8, pub crystal_upgrade: u8, pub iron_upgrade: u8, 
 }
 impl GameState{
 	pub fn new() -> GameState {
 		GameState{
-			aoe_tower: false, wall: false, surprise_eggs: false,
-			chocolate: false, cotton_candy: false, industrialisation: false,
+			tower_researched: [false; NUMBER_OF_TOWERS],
+			chocolate: false, cotton_candy: false, industrialisation: false, economy: false,
 			 gold_upgrade: 0, crystal_upgrade: 0, iron_upgrade: 0, 
 		}
 	}

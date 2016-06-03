@@ -69,6 +69,9 @@ impl Map{
 							"hammer.png",
 							"dream_catcher.png",
 							"money_bag.png", //10
+							"research_aoe.png",
+							"research_wall.png",
+							"libra.png",
 							] ;
 		let folder = find_folder::Search::ParentsThenKids(3, 3).for_folder("button").unwrap();
 		for s in sprite_names.iter() {
@@ -104,15 +107,23 @@ impl Map{
 	/// Must be called in the update loop.
 	/// Returns the produced resources. Only whole numbers can be produced, fractions are stored within the map. To be specific, the vlaues are saved in the land structures.
 	pub fn on_update(&mut self, upd: UpdateArgs, state: &GameState) -> [u32; 4] {
+		let mut coins_produced = 0;
+		let mut wood_produced = 0;
 		let mut iron_produced = 0;
+		let mut crystals_produced = 0;
 		let rn = rand::random::<u32>();
 		for mut l in self.land_matrix.iter_mut() {
 			match l.update(upd.dt, rn, state) {
-				Some(MapUserInteraction::AddResources{iron, ..}) => { iron_produced += iron}
+				Some(MapUserInteraction::AddResources{coins, wood, iron, crystals}) => {
+					iron_produced += iron;
+					coins_produced += coins;
+					wood_produced += wood;
+					crystals_produced += crystals;
+				}
 				_=> {}
 			}
 		}
-		[0,0,iron_produced,0]
+		[coins_produced, wood_produced, iron_produced, crystals_produced]
 	}
 	/// Checks if the current click was on clickable object in the map. 
 	/// Coordinates are relative to the map.
@@ -127,6 +138,7 @@ impl Map{
 					Some(MapUserInteraction::ConcreteLand{..}) => {return Some(MapUserInteraction::ConcreteLand{index:((i as usize * self.cols + j)as u32)}); }
 					Some(MapUserInteraction::BuildIronFactory{..}) => {return Some(MapUserInteraction::BuildIronFactory{index:((i as usize * self.cols + j)as u32)}); }
 					Some(MapUserInteraction::UpgradeIronFactory{level, ..}) => {return Some(MapUserInteraction::UpgradeIronFactory{index:((i as usize * self.cols + j)as u32), level: level}); }
+					Some(MapUserInteraction::UpgradeBank{level, ..}) => {return Some(MapUserInteraction::UpgradeBank{index:((i as usize * self.cols + j)as u32), level: level}); }
 					Some(MapUserInteraction::AddResources{coins, wood, iron, crystals}) => {return Some(MapUserInteraction::AddResources{coins:coins, wood:wood, iron:iron, crystals:crystals}); }
 					Some(MapUserInteraction::BuildUniversity{..}) => {return Some(MapUserInteraction::BuildUniversity{index:((i as usize * self.cols + j)as u32)}); }
 					Some(MapUserInteraction::UpgradeUniversity{level, ..}) => {return Some(MapUserInteraction::UpgradeUniversity{index:((i as usize * self.cols + j)as u32), level: level}); }

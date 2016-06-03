@@ -20,11 +20,14 @@ enum ButtonType{
 	Lumber,
 	UpgradeIronFactory{level: u32 },
 	BuildUniversity,
-	UpgradeUniversity{level: u32 },
-	Industrialisation,
 	BuildBlacksmith,
 	BuildOracle,
 	BuildBank,
+	UpgradeUniversity{level: u32 },
+	UpgradeBank {level: u32},
+	Industrialisation,
+	EconomyResearch,
+	ResearchTower { index: usize},
 }
 
 enum LandType {
@@ -95,22 +98,30 @@ impl Land {
 				if no_wood_before && *grow_state >= 0.5 { refresh_buttons_later = true; }
 			}
 			LandType::Concreted => {}
-			LandType::IronFactory{level, stored} => {
+			LandType::IronFactory{level, ref mut stored} => {
 				if self.bought {
-					let mut stored_after = stored + (level as f64 * dt * 0.1);
-					if stored_after > 1.0 {
-						stored_after -= 1.0;
-						self.land_type = LandType::IronFactory{level:level, stored: stored_after};
-						self.notification = 3;
+					*stored += level as f64 * dt * 0.1;
+					if *stored > 1.0 {
+						*stored -= 1.0;
+						self.notification = 3; // iron
 						self.notification_y = 0.0;
 						return Some(MapUserInteraction::AddResources{coins:0, wood:0, iron:1, crystals:0});
 					}
-					self.land_type = LandType::IronFactory{level:level, stored: stored_after};
 				}
 			}
 			LandType::University{level} => {}
 			LandType::Blacksmith => {}
-			LandType::Bank{..} => {}
+			LandType::Bank{level, ref mut stored} => {
+				if self.bought {
+					*stored += level as f64 * dt / 17.0; // one gold for each level every 17 seconds
+					if *stored > 1.0 {
+						*stored -= 1.0;
+						self.notification = 1; // gold
+						self.notification_y = 0.0;
+						return Some(MapUserInteraction::AddResources{coins:1, wood:0, iron:0, crystals:0});
+					}
+				}
+			}
 			LandType::Oracle => {}
 		}
 		if refresh_buttons_later {self.refresh_buttons(upgrades);}
@@ -219,79 +230,87 @@ impl Land {
 				}
 				let hover = (*b).on_area(mouse[0], mouse[1]);
 				let font_size = self.h / 3.0;
+				let mut sprite_index = None;
+				let mut price = None;
 				match *t {
 					ButtonType::Buy => {
-						(*b).draw(g, view, &(sprite_array[0]), x, y, 2.0 * d, 2.0 * e);
-						if hover {
-							result = Some(DrawRequest::ResourcePrice{price: [self.buy_price, 0, 0, 0], coordinates: view.trans(x, y + (3.0*e)), font_size:font_size as u32});
-							//text::Text::new_color([1.0,1.0, 1.0, 1.0], font_size as u32).draw( &(self.buy_price.to_string() + " Gold"), *font, &draw_state, view.trans(x, y + (3.0*e) ), g);
-						}
+						sprite_index = Some(0);
+						price = Some([self.buy_price, 0, 0, 0]);
 					}
 					ButtonType::Sell => {
-						(*b).draw(g, view, &(sprite_array[1]), x, y, 2.0 * d, 2.0 * e);
-						if hover {
-							result = Some(DrawRequest::ResourcePrice{price: [self.sell_price, 0, 0, 0], coordinates: view.trans(x, y + (3.0*e)), font_size:font_size as u32});
-							//text::Text::new_color([1.0,1.0, 1.0, 1.0], font_size as u32).draw( &(self.sell_price.to_string() + " Gold"), *font, &draw_state, view.trans(x, y + (3.0*e) ), g);
-						}
+						sprite_index = Some(1);
+						price = Some([self.sell_price, 0, 0, 0]);
 					}
 					ButtonType::Concrete => {
-						(*b).draw(g, view, &(sprite_array[2]), x, y, 2.0 * d, 2.0 * e);
-						if hover {
-							result = Some(DrawRequest::ResourcePrice{price: CONCRETE_PRICE, coordinates: view.trans(x, y + (3.0*e)), font_size:font_size as u32});
-							//text::Text::new_color([1.0,1.0, 1.0, 1.0], font_size as u32).draw( &((CONCRETE_PRICE).to_string() + " Iron"), *font, &draw_state, view.trans(x, y + (3.0*e) ), g);
-						}
+						sprite_index = Some(2);
+						price = Some(CONCRETE_PRICE);
 					}
 					ButtonType::BuildIronFactory => {
-						(*b).draw(g, view, &(sprite_array[3]), x, y, 2.0 * d, 2.0 * e);
-						if hover {
-							result = Some(DrawRequest::ResourcePrice{price: IRON_FACTORY_PRICE, coordinates: view.trans(x, y + (3.0*e)), font_size:font_size as u32});
-							//text::Text::new_color([1.0,1.0, 1.0, 1.0], font_size as u32).draw( &((IRON_FACTORY_PRICE).to_string() + " Iron"), *font, &draw_state, view.trans(x, y + (3.0*e) ), g);
-						}
+						sprite_index = Some(3);
+						price = Some(IRON_FACTORY_PRICE);
 					}
 					ButtonType::Lumber => {
-						(*b).draw(g, view, &(sprite_array[4]), x, y, 2.0 * d, 2.0 * e);
+						sprite_index = Some(4);
 					}
 					ButtonType::UpgradeIronFactory{level} => {
-						(*b).draw(g, view, &(sprite_array[5]), x, y, 2.0 * d, 2.0 * e);
-						if hover {
-							result = Some(DrawRequest::ResourcePrice{price: IRON_FACTORY_UPGRADE_PRICE[level as usize], coordinates: view.trans(x, y + (3.0*e)), font_size:font_size as u32});
-						}
+						sprite_index = Some(5);
+						price = Some(IRON_FACTORY_UPGRADE_PRICE[level as usize]);
+					}
+					ButtonType::UpgradeBank{level} => {
+						sprite_index = Some(5);
+						price = Some(BANK_UPGRADE_PRICE[level as usize]);
 					}
 					ButtonType::BuildUniversity => {
-						(*b).draw(g, view, &(sprite_array[6]), x, y, 2.0 * d, 2.0 * e);
-						if hover {	
-							result = Some(DrawRequest::ResourcePrice{price: UNIVERSITY_PRICE, coordinates: view.trans(x, y + (3.0*e)), font_size:font_size as u32});
-						}
+						sprite_index = Some(6);
+						price = Some(UNIVERSITY_PRICE);
 					}
 					ButtonType::UpgradeUniversity{level} => {
-						(*b).draw(g, view, &(sprite_array[5]), x, y, 2.0 * d, 2.0 * e);
-						if hover {	
-							result = Some(DrawRequest::ResourcePrice{price: UPGRADE_UNIVERSITY_PRICE[level as usize], coordinates: view.trans(x, y + (3.0*e)), font_size:font_size as u32});
-						}
+						sprite_index = Some(5);
+						price = Some(UPGRADE_UNIVERSITY_PRICE[level as usize]);
 					}
 					ButtonType::Industrialisation => {
-						(*b).draw(g, view, &(sprite_array[7]), x, y, 2.0 * d, 2.0 * e);
-						if hover {	
-							result = Some(DrawRequest::ResourcePrice{price: INDUSTRIALISATION_PRICE, coordinates: view.trans(x, y + (3.0*e)), font_size:font_size as u32});
-						}
-					}
+						sprite_index = Some(7);
+						price = Some(INDUSTRIALISATION_PRICE);
+					}				
 					ButtonType::BuildBlacksmith => {
-						(*b).draw(g, view, &(sprite_array[8]), x, y, 2.0 * d, 2.0 * e);
-						if hover {	
-							result = Some(DrawRequest::ResourcePrice{price: BLACKSMITH_PRICE, coordinates: view.trans(x, y + (3.0*e)), font_size:font_size as u32});
-						}
+						sprite_index = Some(8);
+						price = Some(BLACKSMITH_PRICE);
 					}
 					ButtonType::BuildOracle => {
-						(*b).draw(g, view, &(sprite_array[9]), x, y, 2.0 * d, 2.0 * e);
-						if hover {	
-							result = Some(DrawRequest::ResourcePrice{price: ORACLE_PRICE, coordinates: view.trans(x, y + (3.0*e)), font_size:font_size as u32});
-						}
+						sprite_index = Some(9);
+						price = Some(ORACLE_PRICE);
 					}
 					ButtonType::BuildBank => {
-						(*b).draw(g, view, &(sprite_array[10]), x, y, 2.0 * d, 2.0 * e);
-						if hover {	
-							result = Some(DrawRequest::ResourcePrice{price: BANK_PRICE, coordinates: view.trans(x, y + (3.0*e)), font_size:font_size as u32});
-						}
+						sprite_index = Some(10);
+						price = Some(BANK_PRICE);
+					}
+					ButtonType::ResearchTower{index} => {
+						match index {
+							AOE_TID => {
+								sprite_index = Some(11);
+								price = Some(RESEARCH_TOWER_PRICE_LIST[AOE_TID]);
+							}
+							WALL_TID => {
+								sprite_index = Some(12);
+								price = Some(RESEARCH_TOWER_PRICE_LIST[WALL_TID]);
+							}
+							_ => {
+								println!("Unexpected index for tower research: {}", index);
+							}
+						}						
+					}
+					ButtonType::EconomyResearch => {
+						sprite_index = Some(13);
+						price = Some(ECONOMY_RESEARCH_PRICE);
+					}
+
+				}
+				if let Some(i) = sprite_index {
+					(*b).draw(g, view, &(sprite_array[i]), x, y, 2.0 * d, 2.0 * e);
+				}
+				if let Some(p) = price {
+					if hover {	
+						result = Some(DrawRequest::ResourcePrice{price: p, coordinates: view.trans(x, y + (3.0*e)), font_size:font_size as u32});
 					}
 				}
 			}
@@ -334,6 +353,9 @@ impl Land {
 						ButtonType::UpgradeIronFactory{level} => {					
 							result = Some(MapUserInteraction::UpgradeIronFactory{index: 0 as u32, level: level});
 						}
+						ButtonType::UpgradeBank{level} => {					
+							result = Some(MapUserInteraction::UpgradeBank{index: 0 as u32, level: level});
+						}
 						ButtonType::BuildUniversity => {
 							result = Some(MapUserInteraction::BuildUniversity{index: 0 as u32});
 						}
@@ -343,6 +365,9 @@ impl Land {
 						ButtonType::Industrialisation => {
 							result = Some(MapUserInteraction::Industrialise);
 						}
+						ButtonType::EconomyResearch => {
+							result = Some(MapUserInteraction::ResearchEconomy);
+						}
 						ButtonType::BuildBlacksmith => {
 							result = Some(MapUserInteraction::BuildBlacksmith{index: 0 as u32});
 						}
@@ -351,6 +376,9 @@ impl Land {
 						}
 						ButtonType::BuildBank => {
 							result = Some(MapUserInteraction::BuildBank{index: 0 as u32});
+						}
+						ButtonType::ResearchTower{index} => {
+							result = Some(MapUserInteraction::ResearchTower{index: index} )
 						}
 					}
 					break;
@@ -367,15 +395,17 @@ impl Land {
 		if self.bought {
 			match self.land_type {
 				LandType::Empty => {
+					self.buttons.push((JkmButton::new(0.0, 0.0, (2.0  *self.w / 3.0), (2.0 * self.h/ 3.0), JkmStyle::OuterCircle, [0.1,0.1,0.1,0.9]), ButtonType::BuildOracle));
 					self.buttons.push((JkmButton::new(0.0, 0.0, (2.0  * self.w / 3.0), (2.0 * self.h/ 3.0), JkmStyle::OuterCircle, [0.1,0.1,0.1,0.9]) ,ButtonType::Concrete));
 				}
 				LandType::Concreted => {
 					self.buttons.push((JkmButton::new(0.0, 0.0, (2.0  *self.w / 3.0), (2.0 * self.h/ 3.0), JkmStyle::OuterCircle, [0.1,0.1,0.1,0.9]), ButtonType::BuildUniversity));
-					self.buttons.push((JkmButton::new(0.0, 0.0, (2.0  *self.w / 3.0), (2.0 * self.h/ 3.0), JkmStyle::OuterCircle, [0.1,0.1,0.1,0.9]), ButtonType::BuildOracle));
 					self.buttons.push((JkmButton::new(0.0, 0.0, (2.0  *self.w / 3.0), (2.0 * self.h/ 3.0), JkmStyle::OuterCircle, [0.1,0.1,0.1,0.9]), ButtonType::BuildBlacksmith));
-					self.buttons.push((JkmButton::new(0.0, 0.0, (2.0  *self.w / 3.0), (2.0 * self.h/ 3.0), JkmStyle::OuterCircle, [0.1,0.1,0.1,0.9]), ButtonType::BuildBank));
 					if upgrades.industrialisation {
 						self.buttons.push((JkmButton::new(0.0, 0.0, (2.0  *self.w / 3.0), (2.0 * self.h/ 3.0), JkmStyle::OuterCircle, [0.1,0.1,0.1,0.9]), ButtonType::BuildIronFactory));
+					}
+					if upgrades.economy {
+						self.buttons.push((JkmButton::new(0.0, 0.0, (2.0  *self.w / 3.0), (2.0 * self.h/ 3.0), JkmStyle::OuterCircle, [0.1,0.1,0.1,0.9]), ButtonType::BuildBank));
 					}
 					
 				}
@@ -384,17 +414,20 @@ impl Land {
 					else {self.buttons.push((JkmButton::new(0.0, 0.0, (2.0  * self.w / 3.0), (2.0 * self.h/ 3.0), JkmStyle::OuterCircle, [0.1,0.1,0.1,0.9]) ,ButtonType::Concrete));}
 				}
 				LandType::IronFactory{level, ..} => {
-					if level < IRON_FACTORY_UPGRADES as u32 {self.buttons.push((JkmButton::new(0.0, 0.0, (2.0  *self.w / 3.0), (2.0 * self.h/ 3.0), JkmStyle::OuterCircle, [0.1,0.1,0.1,0.9]), ButtonType::UpgradeIronFactory{level: level + 1 }));}
+					if level < IRON_FACTORY_UPGRADES as u32 + 1 {self.buttons.push((JkmButton::new(0.0, 0.0, (2.0  *self.w / 3.0), (2.0 * self.h/ 3.0), JkmStyle::OuterCircle, [0.1,0.1,0.1,0.9]), ButtonType::UpgradeIronFactory{level: level-1}));}
 				}
 				LandType::University{level} => {
 					if !upgrades.industrialisation { self.buttons.push((JkmButton::new(0.0, 0.0, (2.0  * self.w / 3.0), (2.0 * self.h/ 3.0), JkmStyle::OuterCircle, [0.5,0.5,1.0,0.9]), ButtonType::Industrialisation)); }
-					if level < UNIVERSITY_UPGRADES as u32 {self.buttons.push((JkmButton::new(0.0, 0.0, (2.0  *self.w / 3.0), (2.0 * self.h/ 3.0), JkmStyle::OuterCircle, [0.1,0.1,0.1,0.9]), ButtonType::UpgradeUniversity{level:level+1}));}
+					if level >= 2 && !upgrades.economy { self.buttons.push((JkmButton::new(0.0, 0.0, (2.0  * self.w / 3.0), (2.0 * self.h/ 3.0), JkmStyle::OuterCircle, [0.5,0.5,1.0,0.9]), ButtonType::EconomyResearch)); }
+					if level < UNIVERSITY_UPGRADES as u32 {self.buttons.push((JkmButton::new(0.0, 0.0, (2.0  *self.w / 3.0), (2.0 * self.h/ 3.0), JkmStyle::OuterCircle, [0.1,0.1,0.1,0.9]), ButtonType::UpgradeUniversity{level:level}));}
 				}
 				LandType::Blacksmith => {
-				
+					if !upgrades.tower_researched[AOE_TID] { self.buttons.push((JkmButton::new(0.0, 0.0, (2.0  * self.w / 3.0), (2.0 * self.h/ 3.0), JkmStyle::OuterCircle, [0.5,0.5,1.0,0.9]), ButtonType::ResearchTower{index:AOE_TID})); }
+					if !upgrades.tower_researched[WALL_TID] { self.buttons.push((JkmButton::new(0.0, 0.0, (2.0  * self.w / 3.0), (2.0 * self.h/ 3.0), JkmStyle::OuterCircle, [0.5,0.5,1.0,0.9]), ButtonType::ResearchTower{index:WALL_TID})); }
+					
 				}
-				LandType::Bank{..} => {
-				
+				LandType::Bank{level, ..} => {
+					if level < BANK_UPGRADES as u32 + 1 {self.buttons.push((JkmButton::new(0.0, 0.0, (2.0  *self.w / 3.0), (2.0 * self.h/ 3.0), JkmStyle::OuterCircle, [0.1,0.1,0.1,0.9]), ButtonType::UpgradeBank{level: level-1 }));}
 				}
 				LandType::Oracle => {
 				
@@ -445,6 +478,12 @@ impl Land {
 		}
 		self.refresh_buttons(s);
 	}
+	pub fn upgrade_bank(&mut self, s: &GameState){
+		if let LandType::Bank{ref mut level, ..} = self.land_type{
+			*level += 1;	
+		}
+		self.refresh_buttons(s);
+	}
 	pub fn build_university(&mut self, s: &GameState){
 		self.land_type = LandType::University{level: 0};
 		self.refresh_buttons(s);
@@ -460,7 +499,7 @@ impl Land {
 		self.refresh_buttons(s);
 	}
 	pub fn build_bank(&mut self, s: &GameState){
-		self.land_type = LandType::Bank{level: 0, stored:0.0};
+		self.land_type = LandType::Bank{level: 1, stored:0.0};
 		self.refresh_buttons(s);
 	}
 	pub fn build_oracle(&mut self, s: &GameState){

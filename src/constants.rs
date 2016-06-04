@@ -49,9 +49,10 @@ pub const BANK_UPGRADE_PRICE: [[u32;4]; BANK_UPGRADES] =
 		[25,0,0,10],
 		[35,0,0,20],
 	];
-pub const ORACLE_PRICE: [u32;4] = [0,0,0,5];
 
-// UPGRADES
+pub const ORACLE_PRICE: [u32;4] = [0,0,0,5];
+	
+// UPGRADES / RESEARCHES
 pub const INDUSTRIALISATION_PRICE: [u32;4] = [0,5,5,0];
 pub const ECONOMY_RESEARCH_PRICE: [u32;4] = [10,5,5,5];
 pub const RESEARCH_TOWER_PRICE_LIST: [[u32;4]; NUMBER_OF_TOWERS] = 
@@ -60,7 +61,19 @@ pub const RESEARCH_TOWER_PRICE_LIST: [[u32;4]; NUMBER_OF_TOWERS] =
 		[0,5,0,0],
 		[0,0,5,0],		
 	];
-
+pub const ORACLE_RESEARCH_LEVELS: usize = 8;
+pub const ORACLE_RESEARCH_PRICE_LIST: [[u32;4]; ORACLE_RESEARCH_LEVELS] = 
+	[
+		[1,1,1,1],
+		[2,2,2,2],
+		[3,3,3,3],
+		[5,5,5,5],
+		[8,8,8,5],
+		[12,12,12,5],
+		[15,15,15,8],
+		[20,20,20,10],
+	];	
+	
 // Defence
 	//General
 	pub const BATTLEFIELD_W: f64 = 600.0;
@@ -121,3 +134,23 @@ pub const RESEARCH_TOWER_PRICE_LIST: [[u32;4]; NUMBER_OF_TOWERS] =
 		pub const PROJECTILE_SPRITE_LIST: [&'static str; 2] = ["projectile_i.png", "projectile_i.png"];
 		pub const PROJECTILE_VELOCITY: f64 = 1000.0;
 		pub const PROJECTILE_SIZE: (f64,f64) = (20.0,10.0);
+		
+// Constant functions to determine game behaviour
+
+/** Defines how the resource bonuses granted by the Oracle researches are calculated.
+
+Currently in use: 1 + x^1.5
+
+* 0 -> 1 => 1
+* 1 -> 2 => 2
+* 2 -> 3.8 => 4
+* 3 -> 6.19 => 6
+* 4 -> 9 => 9
+* 5 -> 12.18 => 12
+* 6 -> 15.69 => 16
+* 7 -> 19.52 => 20
+* 8 -> 23.63 => 24
+*/
+pub fn apply_bonus (res: u32, upgrade_level: u32) -> u32 {
+	 res * (1 + ((upgrade_level as f32 * (upgrade_level as f32).sqrt() ) + 0.5) as u32)
+}

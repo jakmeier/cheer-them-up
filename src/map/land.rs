@@ -12,6 +12,7 @@ use gfx_graphics::GfxGraphics;
 
 use rand;
 
+
 enum ButtonType{
 	Buy, 
 	Sell,
@@ -28,6 +29,9 @@ enum ButtonType{
 	Industrialisation,
 	EconomyResearch,
 	ResearchTower { index: usize},
+	UpgradeGold { level: usize },
+	UpgradeIron { level: usize },
+	UpgradeCrystal { level: usize },
 }
 
 enum LandType {
@@ -303,6 +307,18 @@ impl Land {
 						sprite_index = Some(13);
 						price = Some(ECONOMY_RESEARCH_PRICE);
 					}
+					ButtonType::UpgradeGold{level} => {
+						sprite_index = Some(14);
+						price = Some(ORACLE_RESEARCH_PRICE_LIST[level]);
+					}
+					ButtonType::UpgradeIron{level} => {
+						sprite_index = Some(15);
+						price = Some(ORACLE_RESEARCH_PRICE_LIST[level]);
+					}
+					ButtonType::UpgradeCrystal{level} => {
+						sprite_index = Some(16);
+						price = Some(ORACLE_RESEARCH_PRICE_LIST[level]);
+					}
 
 				}
 				if let Some(i) = sprite_index {
@@ -378,7 +394,16 @@ impl Land {
 							result = Some(MapUserInteraction::BuildBank{index: 0 as u32});
 						}
 						ButtonType::ResearchTower{index} => {
-							result = Some(MapUserInteraction::ResearchTower{index: index} )
+							result = Some(MapUserInteraction::ResearchTower{index: index} );
+						}
+						ButtonType::UpgradeGold{..} => {
+							result = Some(MapUserInteraction::UpgradeGold);
+						}
+						ButtonType::UpgradeIron{..} => {
+							result = Some(MapUserInteraction::UpgradeIron);
+						}
+						ButtonType::UpgradeCrystal{..} => {
+							result = Some(MapUserInteraction::UpgradeCrystal);
 						}
 					}
 					break;
@@ -406,12 +431,16 @@ impl Land {
 					}
 					if upgrades.economy {
 						self.buttons.push((JkmButton::new(0.0, 0.0, (2.0  *self.w / 3.0), (2.0 * self.h/ 3.0), JkmStyle::OuterCircle, [0.1,0.1,0.1,0.9]), ButtonType::BuildBank));
-					}
-					
+					}			
 				}
 				LandType::Tree{grow_state, ..} => {
-					if grow_state > 0.5 { self.buttons.push((JkmButton::new(0.0, 0.0, (2.0  *self.w / 3.0), (2.0 * self.h/ 3.0), JkmStyle::Rectangle, [0.0,0.0,0.3,0.8]) ,ButtonType::Lumber)); }
-					else {self.buttons.push((JkmButton::new(0.0, 0.0, (2.0  * self.w / 3.0), (2.0 * self.h/ 3.0), JkmStyle::OuterCircle, [0.1,0.1,0.1,0.9]) ,ButtonType::Concrete));}
+					if grow_state > 0.5 { 
+						self.buttons.push((JkmButton::new(0.0, 0.0, (2.0  *self.w / 3.0), (2.0 * self.h/ 3.0), JkmStyle::Rectangle, [0.0,0.0,0.3,0.8]) ,ButtonType::Lumber)); 
+					}
+					else {
+						self.buttons.push((JkmButton::new(0.0, 0.0, (2.0  *self.w / 3.0), (2.0 * self.h/ 3.0), JkmStyle::OuterCircle, [0.1,0.1,0.1,0.9]), ButtonType::BuildOracle));
+						self.buttons.push((JkmButton::new(0.0, 0.0, (2.0  * self.w / 3.0), (2.0 * self.h/ 3.0), JkmStyle::OuterCircle, [0.1,0.1,0.1,0.9]) ,ButtonType::Concrete));
+					}
 				}
 				LandType::IronFactory{level, ..} => {
 					if level < IRON_FACTORY_UPGRADES as u32 + 1 {self.buttons.push((JkmButton::new(0.0, 0.0, (2.0  *self.w / 3.0), (2.0 * self.h/ 3.0), JkmStyle::OuterCircle, [0.1,0.1,0.1,0.9]), ButtonType::UpgradeIronFactory{level: level-1}));}
@@ -430,7 +459,15 @@ impl Land {
 					if level < BANK_UPGRADES as u32 + 1 {self.buttons.push((JkmButton::new(0.0, 0.0, (2.0  *self.w / 3.0), (2.0 * self.h/ 3.0), JkmStyle::OuterCircle, [0.1,0.1,0.1,0.9]), ButtonType::UpgradeBank{level: level-1 }));}
 				}
 				LandType::Oracle => {
-				
+					if (upgrades.gold_upgrade as usize) < ORACLE_RESEARCH_LEVELS {
+						 self.buttons.push((JkmButton::new(0.0, 0.0, (2.0  * self.w / 3.0), (2.0 * self.h/ 3.0), JkmStyle::OuterCircle, [0.3,1.0,0.3,0.9]), ButtonType::UpgradeGold{level: upgrades.gold_upgrade as usize}));
+					}
+					if (upgrades.iron_upgrade as usize) < ORACLE_RESEARCH_LEVELS {
+						 self.buttons.push((JkmButton::new(0.0, 0.0, (2.0  * self.w / 3.0), (2.0 * self.h/ 3.0), JkmStyle::OuterCircle, [0.3,1.0,0.3,0.9]), ButtonType::UpgradeIron{level: upgrades.iron_upgrade as usize}));
+					}
+					if (upgrades.crystal_upgrade as usize) < ORACLE_RESEARCH_LEVELS {
+						 self.buttons.push((JkmButton::new(0.0, 0.0, (2.0  * self.w / 3.0), (2.0 * self.h/ 3.0), JkmStyle::OuterCircle, [0.3,1.0,0.3,0.9]), ButtonType::UpgradeCrystal{level: upgrades.crystal_upgrade as usize}));
+					}
 				}
 				
 			}

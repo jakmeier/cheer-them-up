@@ -72,6 +72,9 @@ impl Map{
 							"research_aoe.png",
 							"research_wall.png",
 							"libra.png",
+							"gold_upgrade.png",
+							"iron_upgrade.png", //15
+							"crystal_upgrade.png",
 							] ;
 		let folder = find_folder::Search::ParentsThenKids(3, 3).for_folder("button").unwrap();
 		for s in sprite_names.iter() {

@@ -42,6 +42,7 @@ pub enum MapUserInteraction{
 	Industrialise,
 	ResearchEconomy,
 	ResearchTower{index: usize}, 
+	UpgradeGold, UpgradeIron, UpgradeCrystal,
 }
 
 /// Used by the defence module to communicate with the root of the project. Mostly to request constructions and upgrades that are only allowed if there are enough resources.

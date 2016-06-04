@@ -86,7 +86,7 @@ pub struct Game {
 			else if !self.coin_paid{
 				self.mini_game.lock_input(false);
 				self.mini_game.set_visibility(true, false);
-				if self.mini_game.get_winner() == 1 {self.cash.add_coins(1); }
+				if self.mini_game.get_winner() == 1 {self.cash.add_coins( constants::apply_bonus(1, self.state.gold_upgrade as u32)); }
 				self.coin_paid = true;
 			}
 			let resources_produced = self.map.on_update(upd, &self.state);
@@ -127,6 +127,7 @@ pub struct Game {
 				self.game_two.draw(g, c.transform.trans(self.game_split_coordinates[0], self.game_split_coordinates[1]), c.draw_state, self.eco_def_split_coordinate - self.game_split_coordinates[0], self.screen_height - self.game_split_coordinates[1], [self.mouse_x - self.game_split_coordinates[0], self.mouse_y - self.game_split_coordinates[1]]);
 			});
 		}
+		
 		pub fn on_input(&mut self, inp: Input){
 			if let Some(pos) = inp.mouse_cursor_args() {
 				self.mouse_x = pos[0] as f64;
@@ -174,7 +175,12 @@ pub struct Game {
 								
 								//game_two
 								if let Some(reward) = self.game_two.click(self.mouse_x - self.game_split_coordinates[0], self.mouse_y - self.game_split_coordinates[1])
-								{self.cash.add_resources(reward);}
+								{
+									let g = constants::apply_bonus(reward[0], self.state.gold_upgrade as u32);
+									let i = constants::apply_bonus(reward[2], self.state.iron_upgrade as u32);
+									let c = constants::apply_bonus(reward[3], self.state.crystal_upgrade as u32);
+									self.cash.add_resources([g, reward[1], i, c]);
+								}
 							
 						}
 						_ => {}
@@ -263,14 +269,31 @@ pub struct Game {
 						self.map.update_all_buttons(&self.state);
 					}
 				}
+				MapUserInteraction::UpgradeGold => {
+					if self.cash.test_and_pay(ORACLE_RESEARCH_PRICE_LIST[self.state.gold_upgrade as usize]){
+						self.state.gold_upgrade += 1;	
+						self.map.update_all_buttons(&self.state);
+					}
+				}
+				MapUserInteraction::UpgradeIron => {
+					if self.cash.test_and_pay(ORACLE_RESEARCH_PRICE_LIST[self.state.iron_upgrade as usize]){
+						self.state.iron_upgrade += 1;	
+						self.map.update_all_buttons(&self.state);
+					}
+				}
+				MapUserInteraction::UpgradeCrystal => {
+					if self.cash.test_and_pay(ORACLE_RESEARCH_PRICE_LIST[self.state.crystal_upgrade as usize]){
+						self.state.crystal_upgrade += 1;	
+						self.map.update_all_buttons(&self.state);
+					}
+				}
 				MapUserInteraction::ResearchTower{index} => {
 					if self.cash.test_and_pay(RESEARCH_TOWER_PRICE_LIST[index]){
 						self.state.tower_researched[index] = true;	
-						//self.defence.shop.make_available(index);
 						self.map.update_all_buttons(&self.state);
 					}
-					
 				}
+				
 			}
 		}
 		

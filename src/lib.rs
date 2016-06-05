@@ -317,6 +317,9 @@ pub struct Game {
 						};
 						self.state.tower_upgrades[tid][i] += 1;	
 						self.map.update_all_buttons(&self.state);
+						if i == 1 {
+							self.defence.cascade_health_upgrade(&self.state);
+						}
 					}
 				}
 				

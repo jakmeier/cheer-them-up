@@ -80,9 +80,10 @@ impl Map{
 							"tu_range.png",
 							"tu_basic.png", //20
 							"tu_aoe.png",
+							"tu_wall.png",
 							"build_blacksmith_ii.png",
 							"build_barracks.png",
-							"build_archery_range.png",
+							"build_archery_range.png", //25
 							] ;
 		let folder = find_folder::Search::ParentsThenKids(3, 3).for_folder("button").unwrap();
 		for s in sprite_names.iter() {

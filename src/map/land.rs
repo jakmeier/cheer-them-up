@@ -347,6 +347,7 @@ impl Land {
 						sprite_index = match tid {
 							BASIC_TID => Some(20),
 							AOE_TID => Some(21),
+							WALL_TID => Some(22),
 							_ => { 
 								println!("Unexpected TID to upgrade: {}", tid);
 								None
@@ -360,15 +361,15 @@ impl Land {
 						price = Some(tower_upgrade_cost(level));
 					}
 					ButtonType::BuildBlacksmithII => {
-						sprite_index = Some(22);
+						sprite_index = Some(23);
 						price = Some(BLACKSMITH_II_PRICE);
 					}
 					ButtonType::BuildBarracks => {
-						sprite_index = Some(23);
+						sprite_index = Some(24);
 						price = Some(BARRACKS_PRICE);
 					}
 					ButtonType::BuildArcheryRange => {
-						sprite_index = Some(24);
+						sprite_index = Some(25);
 						price = Some(ARCHERY_RANGE_PRICE);
 					}
 				}
@@ -555,6 +556,9 @@ impl Land {
 					}
 					if upgrades.tower_researched[AOE_TID] {
 						self.buttons.push((JkmButton::new(0.0, 0.0, (2.0  * self.w / 3.0), (2.0 * self.h/ 3.0), JkmStyle::OuterCircle, [0.5, 0.2,0.2,0.9]), ButtonType::UpgradeTower{tid: AOE_TID, kind: TowerAttribute::Defence, level: upgrades.tower_upgrades[AOE_TID][1] as u32}));
+					}
+					if upgrades.tower_researched[WALL_TID] {
+						self.buttons.push((JkmButton::new(0.0, 0.0, (2.0  * self.w / 3.0), (2.0 * self.h/ 3.0), JkmStyle::OuterCircle, [0.5, 0.2,0.2,0.9]), ButtonType::UpgradeTower{tid: WALL_TID, kind: TowerAttribute::Defence, level: upgrades.tower_upgrades[WALL_TID][1] as u32}));
 					}
 				}
 				LandType::ArcheryRange => {

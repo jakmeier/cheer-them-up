@@ -297,4 +297,9 @@ impl Defence {
 		}
 		
 	}
+	pub fn cascade_health_upgrade(&mut self, state: &GameState) {
+		for tower in self.towers.iter_mut() {
+			tower.apply_health_upgrade(state);
+		}
+	}
 }

@@ -11,7 +11,7 @@ use piston_window::*;
 use gfx_device_gl::Resources;
 use gfx_device_gl::command::CommandBuffer;
 use gfx_graphics::GfxGraphics;
-use find_folder;
+//use find_folder;
 
 pub struct Shop {
 	selected: Option<usize>,

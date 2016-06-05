@@ -49,7 +49,7 @@ pub struct Defence {
 
 impl Defence {
 	/// width and height are not related to the actual drawn size, they only define the size of the battle field, i.e. how many objects can fit on it.
-	pub fn new (w: &PistonWindow, hp: u32, width: f64, height: f64) -> Defence {
+	pub fn new (w: &PistonWindow, hp: u32, width: f64, height: f64, state: &GameState) -> Defence {
 		let controller = controller::Ctrl::new(width/2.0, 0.0);
 		
 		let bf_height = height * BF_SHOP_SPLIT_RATIO;
@@ -104,9 +104,9 @@ impl Defence {
 		
 		//create tower templates
 		let t_temp :[Box<Tower>;NUMBER_OF_TOWERS] = [
-			Box::new(basic_tower::BasicTower::new(0.0, 0.0)),
-			Box::new(aoe_tower::AoeTower::new(0.0, 0.0)),
-			Box::new(wall::Wall::new(0.0, 0.0)),
+			Box::new(basic_tower::BasicTower::new(0.0, 0.0, &state)),
+			Box::new(aoe_tower::AoeTower::new(0.0, 0.0, &state)),
+			Box::new(wall::Wall::new(0.0, 0.0, &state)),
 		];
 		
 		let shop = shop::Shop::new();
@@ -128,7 +128,7 @@ impl Defence {
 			projectile_sprites: projectile_sprites,
 		}
 	}
-	pub fn on_update(&mut self, upd: UpdateArgs) {
+	pub fn on_update(&mut self, upd: UpdateArgs, state: &GameState) {
 		
 		// enemy creation
 		self.controller.update(upd.dt, &mut self.enemies);
@@ -148,7 +148,7 @@ impl Defence {
 			self.towers.swap_remove(i);
 		}
 		for t in self.towers.iter_mut() {
-			if let Some(p) = t.update(upd.dt, &mut self.enemies){
+			if let Some(p) = t.update(upd.dt, &mut self.enemies, &state){
 				self.projectiles.push(p);
 			}
 		}
@@ -237,7 +237,7 @@ impl Defence {
 		
 		// towers
 		for t in self.towers.iter() {
-			t.draw(g, view, mouse, dx, dy, &self.tower_sprites);
+			t.draw(g, view, mouse, dx, dy, &self.tower_sprites, &state);
 		}
 		
 		
@@ -256,7 +256,7 @@ impl Defence {
 		let draw_req = self.shop.draw(g, view.trans(0.0, battlefield_h), w, h - battlefield_h, [mouse[0], mouse[1] - battlefield_h], &self.tower_sprites, dx, dy, state);
 		match draw_req{
 			Some(DrawRequest::DrawTower{tower_id}) => {
-				self.tower_templates[tower_id].draw(g, view.trans(mouse[0],mouse[1]), [mouse[0] - 10.0, mouse[1]-10.0], dx, dy, &self.tower_sprites);
+				self.tower_templates[tower_id].draw(g, view.trans(mouse[0],mouse[1]), [mouse[0] - 10.0, mouse[1]-10.0], dx, dy, &self.tower_sprites, &state);
 				let (w,h) = self.tower_templates[tower_id].get_tower_size();
 				let x = mouse[0] / self.dx;
 				let y = mouse[1] / self.dy;
@@ -279,12 +279,12 @@ impl Defence {
 
 // 
 impl Defence {
-	pub fn build_tower(&mut self, x: f64, y: f64, tower_id: usize) {
+	pub fn build_tower(&mut self, x: f64, y: f64, tower_id: usize, state: &GameState) {
 		let new_tower : Box<Tower> =
 		match tower_id {
-			BASIC_TID => Box::new(tower::basic_tower::BasicTower::new(x, y)),
-			AOE_TID => Box::new(tower::aoe_tower::AoeTower::new(x, y)),
-			WALL_TID => Box::new(tower::wall::Wall::new(x, y)),
+			BASIC_TID => Box::new(tower::basic_tower::BasicTower::new(x, y, &state)),
+			AOE_TID => Box::new(tower::aoe_tower::AoeTower::new(x, y, &state)),
+			WALL_TID => Box::new(tower::wall::Wall::new(x, y, &state)),
 			_ => panic!("Unexpected tower ID: {}", tower_id),
 		};
 		let (w,h) = new_tower.get_tower_size();

@@ -28,7 +28,7 @@ pub struct Map {
 	land_sprites: Vec<Texture<Resources>>,
 //	button_sprites: [Texture<Resources>; BUTTON_SPRITES_COUNT ],
 	button_sprites: Vec<Texture<Resources>>,
-	font: Glyphs,
+//	font: Glyphs,
 }
 
 
@@ -46,7 +46,7 @@ impl Map{
 							"industry.png", "add_coins.png", "add_wood.png", "add_iron.png", "add_crystal.png", 
 							"university_i.png", "university_ii.png", "university_iii.png", "university_iv.png",
 							"blacksmith.png", "bank.png", "magic_stones.png",
-							
+							"blacksmith_ii.png", "barracks.png", "archery_range.png",	
 							] ;
 		let folder = find_folder::Search::ParentsThenKids(3, 3).for_folder("map").unwrap();
 		for s in sprite_names.iter() {
@@ -75,6 +75,14 @@ impl Map{
 							"gold_upgrade.png",
 							"iron_upgrade.png", //15
 							"crystal_upgrade.png",
+							"tu_attack.png",
+							"tu_defence.png",
+							"tu_range.png",
+							"tu_basic.png", //20
+							"tu_aoe.png",
+							"build_blacksmith_ii.png",
+							"build_barracks.png",
+							"build_archery_range.png",
 							] ;
 		let folder = find_folder::Search::ParentsThenKids(3, 3).for_folder("button").unwrap();
 		for s in sprite_names.iter() {
@@ -85,10 +93,10 @@ impl Map{
 	
 		// Font
 		
-		let assets = find_folder::Search::ParentsThenKids(3, 3).for_folder("font").unwrap();
-		let ref font = assets.join("FiraSans-Regular.ttf");
-		let factory = w.factory.borrow().clone();
-		let glyphs = Glyphs::new(font, factory).unwrap();
+		//let assets = find_folder::Search::ParentsThenKids(3, 3).for_folder("font").unwrap();
+		//let ref font = assets.join("FiraSans-Regular.ttf");
+		//let factory = w.factory.borrow().clone();
+		//let glyphs = Glyphs::new(font, factory).unwrap();
 		
 		let fake_init_state = GameState::new();
 		for i in 0..cols {
@@ -103,7 +111,7 @@ impl Map{
 			land_matrix: lands,
 			land_sprites: land_sprites,
 			button_sprites: button_sprites,
-			font: glyphs,
+			//font: glyphs,
 		}
 	}
 	
@@ -148,6 +156,9 @@ impl Map{
 					Some(MapUserInteraction::BuildOracle{..}) => {return Some(MapUserInteraction::BuildOracle{index:((i as usize * self.cols + j)as u32)}); }
 					Some(MapUserInteraction::BuildBlacksmith{..}) => {return Some(MapUserInteraction::BuildBlacksmith{index:((i as usize * self.cols + j)as u32)}); }
 					Some(MapUserInteraction::BuildBank{..}) => {return Some(MapUserInteraction::BuildBank{index:((i as usize * self.cols + j)as u32)}); }
+					Some(MapUserInteraction::BuildBlacksmithII{..}) => {return Some(MapUserInteraction::BuildBlacksmithII{index:((i as usize * self.cols + j)as u32)}); }
+					Some(MapUserInteraction::BuildBarracks{..}) => {return Some(MapUserInteraction::BuildBarracks{index:((i as usize * self.cols + j)as u32)}); }
+					Some(MapUserInteraction::BuildArcheryRange{..}) => {return Some(MapUserInteraction::BuildArcheryRange{index:((i as usize * self.cols + j)as u32)}); }
 					Some(upgrade) => { return Some(upgrade); }
 					None => {}
 				}

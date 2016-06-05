@@ -38,6 +38,9 @@ pub const UPGRADE_UNIVERSITY_PRICE: [[u32;4]; UNIVERSITY_UPGRADES] =
 		[30,0,0,20],
 	];
 pub const BLACKSMITH_PRICE: [u32;4] = [0,5,5,0];
+pub const BLACKSMITH_II_PRICE: [u32;4] = [0,5,8,0];
+pub const BARRACKS_PRICE: [u32;4] = [0,5,5,0];
+pub const ARCHERY_RANGE_PRICE: [u32;4] = [0,8,5,0];
 
 pub const BANK_PRICE: [u32;4] = [5,5,0,0];
 pub const BANK_UPGRADES: usize = 5;
@@ -125,7 +128,7 @@ pub const ORACLE_RESEARCH_PRICE_LIST: [[u32;4]; ORACLE_RESEARCH_LEVELS] =
 				[0,0,5,0],
 			];
 		pub const TOWER_SIZE_LIST: [(f64,f64);NUMBER_OF_TOWERS] = [(70.0,100.0),(75.0,100.0),(75.0,50.0) ];
-		pub const TOWER_BASE_HEALTH_LIST: [f64;NUMBER_OF_TOWERS] = [60.0, 100.0, 200.0];
+		pub const TOWER_BASE_HEALTH_LIST: [f64;NUMBER_OF_TOWERS] = [60.0, 100.0, 180.0];
 		pub const TOWER_BASE_ATTACK_RATIO_LIST: [f64;NUMBER_OF_TOWERS] = [1.0, 1.5, 100.0];
 		pub const TOWER_BASE_ATTACK_LIST: [f64;NUMBER_OF_TOWERS] = [6.0, 5.0, 0.0];
 		pub const TOWER_BASE_RANGE_LIST: [f64;NUMBER_OF_TOWERS] = [300.0, 140.0, 0.0];
@@ -153,4 +156,14 @@ Currently in use: 1 + x^1.5
 */
 pub fn apply_bonus (res: u32, upgrade_level: u32) -> u32 {
 	 res * (1 + ((upgrade_level as f32 * (upgrade_level as f32).sqrt() ) + 0.5) as u32)
+}
+
+/// Defines how much each standard upgrade level for towers cost
+pub fn tower_upgrade_cost (lvl: u32) -> [u32;4] {
+	[
+		5 + lvl * lvl,
+		5 + 3 * lvl,
+		5 + 2 * lvl * lvl ,
+		lvl
+	]
 }

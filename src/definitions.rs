@@ -43,11 +43,23 @@ pub enum MapUserInteraction{
 	ResearchEconomy,
 	ResearchTower{index: usize}, 
 	UpgradeGold, UpgradeIron, UpgradeCrystal,
+	UpgradeTower{ tid: usize, kind: TowerAttribute, level: u32 },
+	BuildBlacksmithII {index: u32}, 
+	BuildBarracks {index: u32}, 
+	BuildArcheryRange {index: u32},
 }
 
 /// Used by the defence module to communicate with the root of the project. Mostly to request constructions and upgrades that are only allowed if there are enough resources.
 pub enum DefenceUserInteraction{
 	BuyTower{x: f64, y:f64, tower_id: usize},
+}
+
+/// Used for tower upgrades to distinguish between differnt upgrades that ate handled the same way in the code.
+#[derive(Clone)]
+pub enum TowerAttribute {
+	Attack,
+	Defence,
+	Range,
 }
 
 /// Stores information about which meta upgrades have been bought already and which have not
@@ -58,6 +70,8 @@ pub struct GameState {
 	pub industrialisation: bool, pub economy: bool, pub chocolate: bool, pub cotton_candy: bool,
 	// Oracle
 	pub gold_upgrade: u8, pub crystal_upgrade: u8, pub iron_upgrade: u8, 
+	// Tower upgrades
+	pub tower_upgrades: [[u8;3]; NUMBER_OF_TOWERS],
 }
 impl GameState{
 	pub fn new() -> GameState {
@@ -65,6 +79,7 @@ impl GameState{
 			tower_researched: [false; NUMBER_OF_TOWERS],
 			chocolate: false, cotton_candy: false, industrialisation: false, economy: false,
 			 gold_upgrade: 0, crystal_upgrade: 0, iron_upgrade: 0, 
+			 tower_upgrades: [[0,0,0]; NUMBER_OF_TOWERS],
 		}
 	}
 }

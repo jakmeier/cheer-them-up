@@ -18,7 +18,7 @@ use constants::*;
 
 pub mod basic_enemy;
 
-struct EnemyAttributes {
+pub struct EnemyAttributes {
 	x: f64, y: f64,
 	w: f64, h: f64,
 	life: f64,

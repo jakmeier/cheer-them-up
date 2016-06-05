@@ -23,7 +23,7 @@ use micro::{PersistentWinnerState, AbsolutelyChangeableState, AI, ClickableGame}
 use piston_window::*;
 
 use constants::*;
-use definitions::{DrawRequest, Drawable, DefenceUserInteraction, MapUserInteraction, GameState};
+use definitions::{DrawRequest, Drawable, DefenceUserInteraction, MapUserInteraction, GameState, TowerAttribute};
 
 
 /// Root structure for the game. It contains all the mini games (micro) as well as the higher level game parts (macro) and connects them.
@@ -65,7 +65,7 @@ pub struct Game {
 				map: map::Map::new(w, 10, 6),
 				mini_game: micro::rock_paper_scissors::GameObj::new(w),
 				game_two: micro::tic_tac_toe::TicTacToeData::new(w, [0, 0, 1, 0], [0, 0, 0, 1]),
-				defence: defence::Defence::new(w, 100, BATTLEFIELD_W, BATTLEFIELD_H),
+				defence: defence::Defence::new(w, 100, BATTLEFIELD_W, BATTLEFIELD_H, &state),
 				clock: 0.0,
 				coin_paid: false,
 				cash: cash::CashHeader::new(w),
@@ -95,7 +95,7 @@ pub struct Game {
 			self.cash.add_iron(resources_produced[2]);
 			self.cash.add_crystals(resources_produced[3]);
 			
-			self.defence.on_update(upd);
+			self.defence.on_update(upd, &self.state);
 			
 			self.game_two.on_update(upd.dt);
 			
@@ -257,6 +257,21 @@ pub struct Game {
 						self.map.land_matrix[index as usize].build_bank(&self.state);	
 					}
 				}
+				MapUserInteraction::BuildBlacksmithII{index} => {
+					if self.cash.test_and_pay(BLACKSMITH_II_PRICE){
+						self.map.land_matrix[index as usize].build_blacksmith_ii(&self.state);	
+					}
+				}
+				MapUserInteraction::BuildBarracks{index} => {
+					if self.cash.test_and_pay(BARRACKS_PRICE){
+						self.map.land_matrix[index as usize].build_barracks(&self.state);	
+					}
+				}
+				MapUserInteraction::BuildArcheryRange{index} => {
+					if self.cash.test_and_pay(ARCHERY_RANGE_PRICE){
+						self.map.land_matrix[index as usize].build_archery_range(&self.state);	
+					}
+				}
 				MapUserInteraction::Industrialise => {
 					if self.cash.test_and_pay(INDUSTRIALISATION_PRICE){
 						self.state.industrialisation = true;	
@@ -293,6 +308,17 @@ pub struct Game {
 						self.map.update_all_buttons(&self.state);
 					}
 				}
+				MapUserInteraction::UpgradeTower{tid, kind, level} => {
+					if self.cash.test_and_pay(constants::tower_upgrade_cost(level)){
+						let i = match kind {
+							TowerAttribute::Attack => 0,
+							TowerAttribute::Defence => 1,
+							TowerAttribute::Range => 2,
+						};
+						self.state.tower_upgrades[tid][i] += 1;	
+						self.map.update_all_buttons(&self.state);
+					}
+				}
 				
 			}
 		}
@@ -301,7 +327,7 @@ pub struct Game {
 			match msg {
 				DefenceUserInteraction::BuyTower{x,y,tower_id} => {
 					if self.cash.test_and_pay( TOWER_PRICE_LIST[tower_id] ){
-						self.defence.build_tower(x,y,tower_id);
+						self.defence.build_tower(x,y,tower_id, &self.state);
 					}
 				}
 			}

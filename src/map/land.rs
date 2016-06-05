@@ -3,7 +3,7 @@ use utils::JkmButton;
 use utils::JkmStyle;
 
 use constants::*;
-use definitions::{DrawRequest, MapUserInteraction, GameState};
+use definitions::{DrawRequest, MapUserInteraction, GameState, TowerAttribute};
 
 use piston_window::*;
 use gfx_device_gl::Resources;
@@ -11,7 +11,6 @@ use gfx_device_gl::command::CommandBuffer;
 use gfx_graphics::GfxGraphics;
 
 use rand;
-
 
 enum ButtonType{
 	Buy, 
@@ -32,6 +31,8 @@ enum ButtonType{
 	UpgradeGold { level: usize },
 	UpgradeIron { level: usize },
 	UpgradeCrystal { level: usize },
+	UpgradeTower { tid: usize, kind: TowerAttribute, level: u32 },
+	BuildBlacksmithII, BuildBarracks, BuildArcheryRange,
 }
 
 enum LandType {
@@ -43,6 +44,7 @@ enum LandType {
 	Blacksmith,
 	Bank{level:u32, stored:f64},
 	Oracle,
+	BlacksmithII, Barracks, ArcheryRange,
 }
 
 pub struct Land {
@@ -113,7 +115,7 @@ impl Land {
 					}
 				}
 			}
-			LandType::University{level} => {}
+			LandType::University{..} => {}
 			LandType::Blacksmith => {}
 			LandType::Bank{level, ref mut stored} => {
 				if self.bought {
@@ -127,6 +129,9 @@ impl Land {
 				}
 			}
 			LandType::Oracle => {}
+			LandType::BlacksmithII => {}
+			LandType::Barracks => {}
+			LandType::ArcheryRange => {}
 		}
 		if refresh_buttons_later {self.refresh_buttons(upgrades);}
 		None
@@ -194,6 +199,24 @@ impl Land {
 				let y_scale = self.h/(sprite_h as f64);
 				image(&(sprite_array[20]), view.trans(self.x, self.y).scale(x_scale, y_scale), g);
 			}
+			LandType::BlacksmithII => {
+				let (sprite_w, sprite_h) = sprite_array[20].get_size();
+				let x_scale = self.w/(sprite_w as f64);
+				let y_scale = self.h/(sprite_h as f64);
+				image(&(sprite_array[21]), view.trans(self.x, self.y).scale(x_scale, y_scale), g);
+			}
+			LandType::Barracks => {
+				let (sprite_w, sprite_h) = sprite_array[20].get_size();
+				let x_scale = self.w/(sprite_w as f64);
+				let y_scale = self.h/(sprite_h as f64);
+				image(&(sprite_array[22]), view.trans(self.x, self.y).scale(x_scale, y_scale), g);
+			}
+			LandType::ArcheryRange => {
+				let (sprite_w, sprite_h) = sprite_array[20].get_size();
+				let x_scale = self.w/(sprite_w as f64);
+				let y_scale = self.h/(sprite_h as f64);
+				image(&(sprite_array[23]), view.trans(self.x, self.y).scale(x_scale, y_scale), g);
+			}
 		}
 		
 		//fog (of war?)
@@ -235,6 +258,7 @@ impl Land {
 				let hover = (*b).on_area(mouse[0], mouse[1]);
 				let font_size = self.h / 3.0;
 				let mut sprite_index = None;
+				let mut second_sprite_index = None;
 				let mut price = None;
 				match *t {
 					ButtonType::Buy => {
@@ -319,11 +343,42 @@ impl Land {
 						sprite_index = Some(16);
 						price = Some(ORACLE_RESEARCH_PRICE_LIST[level]);
 					}
-
+					ButtonType::UpgradeTower { tid, ref kind, level } => {
+						sprite_index = match tid {
+							BASIC_TID => Some(20),
+							AOE_TID => Some(21),
+							_ => { 
+								println!("Unexpected TID to upgrade: {}", tid);
+								None
+							}
+						};
+						second_sprite_index = match *kind {
+							TowerAttribute::Attack => Some(17),
+							TowerAttribute::Defence => Some(18),
+							TowerAttribute::Range => Some(19),
+						};
+						price = Some(tower_upgrade_cost(level));
+					}
+					ButtonType::BuildBlacksmithII => {
+						sprite_index = Some(22);
+						price = Some(BLACKSMITH_II_PRICE);
+					}
+					ButtonType::BuildBarracks => {
+						sprite_index = Some(23);
+						price = Some(BARRACKS_PRICE);
+					}
+					ButtonType::BuildArcheryRange => {
+						sprite_index = Some(24);
+						price = Some(ARCHERY_RANGE_PRICE);
+					}
 				}
 				if let Some(i) = sprite_index {
 					(*b).draw(g, view, &(sprite_array[i]), x, y, 2.0 * d, 2.0 * e);
 				}
+				if let Some(i) = second_sprite_index {
+					(*b).draw(g, view, &(sprite_array[i]), x, y, 2.0 * d, 2.0 * e);
+				}
+				
 				if let Some(p) = price {
 					if hover {	
 						result = Some(DrawRequest::ResourcePrice{price: p, coordinates: view.trans(x, y + (3.0*e)), font_size:font_size as u32});
@@ -405,6 +460,18 @@ impl Land {
 						ButtonType::UpgradeCrystal{..} => {
 							result = Some(MapUserInteraction::UpgradeCrystal);
 						}
+						ButtonType::UpgradeTower{tid, ref kind, level} => {
+							result = Some(MapUserInteraction::UpgradeTower{tid: tid, kind: (*kind).clone(), level: level});
+						}
+						ButtonType::BuildBlacksmithII => {
+							result = Some(MapUserInteraction::BuildBlacksmithII{index: 0});
+						}
+						ButtonType::BuildBarracks => {
+							result = Some(MapUserInteraction::BuildBarracks{index: 0});
+						}
+						ButtonType::BuildArcheryRange => {
+							result = Some(MapUserInteraction::BuildArcheryRange{index: 0});
+						}
 					}
 					break;
 				}
@@ -453,6 +520,11 @@ impl Land {
 				LandType::Blacksmith => {
 					if !upgrades.tower_researched[AOE_TID] { self.buttons.push((JkmButton::new(0.0, 0.0, (2.0  * self.w / 3.0), (2.0 * self.h/ 3.0), JkmStyle::OuterCircle, [0.5,0.5,1.0,0.9]), ButtonType::ResearchTower{index:AOE_TID})); }
 					if !upgrades.tower_researched[WALL_TID] { self.buttons.push((JkmButton::new(0.0, 0.0, (2.0  * self.w / 3.0), (2.0 * self.h/ 3.0), JkmStyle::OuterCircle, [0.5,0.5,1.0,0.9]), ButtonType::ResearchTower{index:WALL_TID})); }
+					if upgrades.industrialisation {
+						self.buttons.push((JkmButton::new(0.0, 0.0, (2.0  *self.w / 3.0), (2.0 * self.h/ 3.0), JkmStyle::OuterCircle, [0.1,0.1,0.1,0.9]), ButtonType::BuildBlacksmithII));
+						self.buttons.push((JkmButton::new(0.0, 0.0, (2.0  *self.w / 3.0), (2.0 * self.h/ 3.0), JkmStyle::OuterCircle, [0.1,0.1,0.1,0.9]), ButtonType::BuildBarracks));
+						self.buttons.push((JkmButton::new(0.0, 0.0, (2.0  *self.w / 3.0), (2.0 * self.h/ 3.0), JkmStyle::OuterCircle, [0.1,0.1,0.1,0.9]), ButtonType::BuildArcheryRange));
+					}
 					
 				}
 				LandType::Bank{level, ..} => {
@@ -467,6 +539,30 @@ impl Land {
 					}
 					if (upgrades.crystal_upgrade as usize) < ORACLE_RESEARCH_LEVELS {
 						 self.buttons.push((JkmButton::new(0.0, 0.0, (2.0  * self.w / 3.0), (2.0 * self.h/ 3.0), JkmStyle::OuterCircle, [0.3,1.0,0.3,0.9]), ButtonType::UpgradeCrystal{level: upgrades.crystal_upgrade as usize}));
+					}
+				}
+				LandType::BlacksmithII => {
+					if upgrades.tower_researched[BASIC_TID] {
+						self.buttons.push((JkmButton::new(0.0, 0.0, (2.0  * self.w / 3.0), (2.0 * self.h/ 3.0), JkmStyle::OuterCircle, [0.5, 0.2,0.2,0.9]), ButtonType::UpgradeTower{tid: BASIC_TID, kind: TowerAttribute::Attack, level: upgrades.tower_upgrades[BASIC_TID][0] as u32}));
+					}
+					if upgrades.tower_researched[AOE_TID] {
+						self.buttons.push((JkmButton::new(0.0, 0.0, (2.0  * self.w / 3.0), (2.0 * self.h/ 3.0), JkmStyle::OuterCircle, [0.5, 0.2,0.2,0.9]), ButtonType::UpgradeTower{tid: AOE_TID, kind: TowerAttribute::Attack, level: upgrades.tower_upgrades[AOE_TID][0] as u32}));
+					}
+				}
+				LandType::Barracks => {
+					if upgrades.tower_researched[BASIC_TID] {
+						self.buttons.push((JkmButton::new(0.0, 0.0, (2.0  * self.w / 3.0), (2.0 * self.h/ 3.0), JkmStyle::OuterCircle, [0.5, 0.2,0.2,0.9]), ButtonType::UpgradeTower{tid: BASIC_TID, kind: TowerAttribute::Defence, level: upgrades.tower_upgrades[BASIC_TID][1] as u32}));
+					}
+					if upgrades.tower_researched[AOE_TID] {
+						self.buttons.push((JkmButton::new(0.0, 0.0, (2.0  * self.w / 3.0), (2.0 * self.h/ 3.0), JkmStyle::OuterCircle, [0.5, 0.2,0.2,0.9]), ButtonType::UpgradeTower{tid: AOE_TID, kind: TowerAttribute::Defence, level: upgrades.tower_upgrades[AOE_TID][1] as u32}));
+					}
+				}
+				LandType::ArcheryRange => {
+					if upgrades.tower_researched[BASIC_TID] {
+						self.buttons.push((JkmButton::new(0.0, 0.0, (2.0  * self.w / 3.0), (2.0 * self.h/ 3.0), JkmStyle::OuterCircle, [0.5, 0.2,0.2,0.9]), ButtonType::UpgradeTower{tid: BASIC_TID, kind: TowerAttribute::Range, level: upgrades.tower_upgrades[BASIC_TID][2] as u32}));
+					}
+					if upgrades.tower_researched[AOE_TID] {
+						self.buttons.push((JkmButton::new(0.0, 0.0, (2.0  * self.w / 3.0), (2.0 * self.h/ 3.0), JkmStyle::OuterCircle, [0.5, 0.2,0.2,0.9]), ButtonType::UpgradeTower{tid: AOE_TID, kind: TowerAttribute::Range, level: upgrades.tower_upgrades[AOE_TID][2] as u32}));
 					}
 				}
 				
@@ -541,6 +637,18 @@ impl Land {
 	}
 	pub fn build_oracle(&mut self, s: &GameState){
 		self.land_type = LandType::Oracle{};
+		self.refresh_buttons(s);
+	}
+	pub fn build_barracks(&mut self, s: &GameState){
+		self.land_type = LandType::Barracks;
+		self.refresh_buttons(s);
+	}
+	pub fn build_blacksmith_ii(&mut self, s: &GameState){
+		self.land_type = LandType::BlacksmithII;
+		self.refresh_buttons(s);
+	}
+	pub fn build_archery_range(&mut self, s: &GameState){
+		self.land_type = LandType::ArcheryRange{};
 		self.refresh_buttons(s);
 	}
 }

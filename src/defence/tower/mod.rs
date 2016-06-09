@@ -7,6 +7,8 @@
 pub mod basic_tower;
 pub mod aoe_tower;
 pub mod wall;
+pub mod slow_tower;
+pub mod rocket_tower;
 
 use constants::*;
 use super::projectile::Projectile;

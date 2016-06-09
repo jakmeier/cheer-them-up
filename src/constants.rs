@@ -63,6 +63,8 @@ pub const RESEARCH_TOWER_PRICE_LIST: [[u32;4]; NUMBER_OF_TOWERS] =
 		[0,0,0,0],
 		[0,5,0,0],
 		[0,0,5,0],		
+		[5,5,5,0],		
+		[10,5,10,5],		
 	];
 pub const ORACLE_RESEARCH_LEVELS: usize = 8;
 pub const ORACLE_RESEARCH_PRICE_LIST: [[u32;4]; ORACLE_RESEARCH_LEVELS] = 
@@ -119,24 +121,34 @@ pub const ORACLE_RESEARCH_PRICE_LIST: [[u32;4]; ORACLE_RESEARCH_LEVELS] =
 		pub const BASIC_TID: usize = 0;
 		pub const AOE_TID: usize = 1;
 		pub const WALL_TID: usize = 2;
+		pub const SLOW_TID: usize = 3;
+		pub const ROCKET_TID: usize = 4;
 		
-		pub const NUMBER_OF_TOWERS: usize = 3;
-		pub const TOWER_SPRITE_LIST: [&'static str; NUMBER_OF_TOWERS] =["jar.png", "box.png", "fence.png"];
+		pub const NUMBER_OF_TOWERS: usize = 5;
+		pub const TOWER_SPRITE_LIST: [&'static str; NUMBER_OF_TOWERS] =["jar.png", "box.png", "fence.png", "cotton_candy.png", "surprise.png"];
 		pub const TOWER_PRICE_LIST: [[u32;4];NUMBER_OF_TOWERS] = [
 				[2,0,0,2],
 				[0,4,0,0],
 				[0,0,5,0],
+				[5,0,0,1],
+				[5,5,10,5],
 			];
-		pub const TOWER_SIZE_LIST: [(f64,f64);NUMBER_OF_TOWERS] = [(70.0,100.0),(75.0,100.0),(75.0,50.0) ];
-		pub const TOWER_BASE_HEALTH_LIST: [f64;NUMBER_OF_TOWERS] = [60.0, 100.0, 180.0];
-		pub const TOWER_BASE_ATTACK_RATIO_LIST: [f64;NUMBER_OF_TOWERS] = [1.0, 1.5, 100.0];
-		pub const TOWER_BASE_ATTACK_LIST: [f64;NUMBER_OF_TOWERS] = [6.0, 5.0, 0.0];
-		pub const TOWER_BASE_RANGE_LIST: [f64;NUMBER_OF_TOWERS] = [300.0, 140.0, 0.0];
+		pub const TOWER_SIZE_LIST: [(f64,f64);NUMBER_OF_TOWERS] = [(70.0,100.0),(75.0,100.0),(75.0,50.0), (55.0, 80.0), (100.0,140.0) ];
+		pub const TOWER_BASE_HEALTH_LIST: [f64;NUMBER_OF_TOWERS] = [60.0, 100.0, 180.0, 100.0, 150.0];
+		pub const TOWER_BASE_ATTACK_RATIO_LIST: [f64;NUMBER_OF_TOWERS] = [1.0, 1.5, 100.0, 0.75, 1.0];
+		pub const TOWER_BASE_ATTACK_LIST: [f64;NUMBER_OF_TOWERS] = [6.0, 5.0, 0.0, 0.0, 15.0];
+		pub const TOWER_BASE_RANGE_LIST: [f64;NUMBER_OF_TOWERS] = [300.0, 140.0, 0.0, 200.0, 275.0];
+		
+		pub const EXPLOSION_BASE_RADIUS: f64 = 20.0;
+		pub const EXPLOSION_VISIBILITY_TIME: f64 = 0.4;
 		
 	// Projectile
-		pub const PROJECTILE_SPRITE_LIST: [&'static str; 2] = ["projectile_i.png", "projectile_i.png"];
+		pub const PROJECTILE_SPRITE_LIST: [&'static str; 3] = ["projectile_i.png", "cotton_candy_projectile.png", "surprise_projectile.png"];
 		pub const PROJECTILE_VELOCITY: f64 = 1000.0;
-		pub const PROJECTILE_SIZE: (f64,f64) = (20.0,10.0);
+		pub const SLOW_PROJECTILE_VELOCITY: f64 = 100.0;
+		pub const BASIC_PROJECTILE_SIZE: (f64,f64) = (20.0,10.0);
+		pub const SLOW_PROJECTILE_SIZE: (f64,f64) = (40.0,20.0);
+		pub const ROCKET_PROJECTILE_SIZE: (f64,f64) = (40.0,20.0);
 		
 // Constant functions to determine game behaviour
 

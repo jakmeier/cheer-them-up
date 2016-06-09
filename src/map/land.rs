@@ -322,6 +322,14 @@ impl Land {
 								sprite_index = Some(12);
 								price = Some(RESEARCH_TOWER_PRICE_LIST[WALL_TID]);
 							}
+							SLOW_TID => {
+								sprite_index = Some(26);
+								price = Some(RESEARCH_TOWER_PRICE_LIST[WALL_TID]);
+							}
+							ROCKET_TID => {
+								sprite_index = Some(27);
+								price = Some(RESEARCH_TOWER_PRICE_LIST[WALL_TID]);
+							}
 							_ => {
 								println!("Unexpected index for tower research: {}", index);
 							}
@@ -516,6 +524,12 @@ impl Land {
 				LandType::University{level} => {
 					if !upgrades.industrialisation { self.buttons.push((JkmButton::new(0.0, 0.0, (2.0  * self.w / 3.0), (2.0 * self.h/ 3.0), JkmStyle::OuterCircle, [0.5,0.5,1.0,0.9]), ButtonType::Industrialisation)); }
 					if level >= 2 && !upgrades.economy { self.buttons.push((JkmButton::new(0.0, 0.0, (2.0  * self.w / 3.0), (2.0 * self.h/ 3.0), JkmStyle::OuterCircle, [0.5,0.5,1.0,0.9]), ButtonType::EconomyResearch)); }
+					if !upgrades.tower_researched[SLOW_TID] && level >= 1 {
+						self.buttons.push((JkmButton::new(0.0, 0.0, (2.0  * self.w / 3.0), (2.0 * self.h/ 3.0), JkmStyle::OuterCircle, [0.5,0.5,1.0,0.9]), ButtonType::ResearchTower{index:SLOW_TID}));
+					}
+					if !upgrades.tower_researched[ROCKET_TID] && upgrades.industrialisation && level >= 3 {
+						self.buttons.push((JkmButton::new(0.0, 0.0, (2.0  * self.w / 3.0), (2.0 * self.h/ 3.0), JkmStyle::OuterCircle, [0.5,0.5,1.0,0.9]), ButtonType::ResearchTower{index:ROCKET_TID}));
+					}
 					if level < UNIVERSITY_UPGRADES as u32 {self.buttons.push((JkmButton::new(0.0, 0.0, (2.0  *self.w / 3.0), (2.0 * self.h/ 3.0), JkmStyle::OuterCircle, [0.1,0.1,0.1,0.9]), ButtonType::UpgradeUniversity{level:level}));}
 				}
 				LandType::Blacksmith => {

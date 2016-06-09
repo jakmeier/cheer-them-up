@@ -21,7 +21,6 @@ pub mod basic_enemy;
 pub struct EnemyAttributes {
 	x: f64, y: f64,
 	w: f64, h: f64,
-	life: f64,
 	speed: usize,
 	health: f64, max_health: f64,
 	attack: f64, attack_ratio: f64, attack_reload: f64,
@@ -52,6 +51,18 @@ pub trait Enemy {
 	}
 	fn is_dead(&self) -> bool { self.get().health <= 0.0 }
 	fn attack_enemy(&mut self, power: f64) { self.get_mut().health -= power; }
+	/// returns the amount of levels the speed was reduced
+	fn slow_down(&mut self, slow_power: usize) -> usize {
+		if self.get().speed < slow_power { 
+			let result = self.get().speed;
+			self.get_mut().speed = 0;
+			result
+		}
+		else {
+			self.get_mut().speed -= slow_power;
+			slow_power
+		}
+	}
 	
 	fn draw(&self, g: &mut GfxGraphics<Resources, CommandBuffer>, view: math::Matrix2d, mouse: [f64;2], dx: f64, dy: f64, sprite_array: &[Texture<Resources>]) {
 		let (sprite_w, sprite_h) = sprite_array[self.get_enemy_type_id()].get_size();

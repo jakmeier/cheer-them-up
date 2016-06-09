@@ -14,6 +14,7 @@ use gfx_device_gl::command::CommandBuffer;
 use gfx_graphics::GfxGraphics;
 use std::f64;
 
+/// represents a singular projectile on the map
 pub struct Projectile {
 	x: f64, y: f64, 
 	vx: f64, vy: f64, 
@@ -25,6 +26,7 @@ pub struct Projectile {
 enum ProjectileImpact {
 	SingleTarget,
 	AoE{radius: f64},
+	Slow{charges: usize},
 }
 
 impl Projectile {
@@ -56,27 +58,75 @@ impl Projectile {
 			life_time: range / PROJECTILE_VELOCITY,
 		}
 	}
-	
+	pub fn new_slow(x: f64, y: f64, dest_x: f64, dest_y: f64, charges: usize, range: f64) -> Projectile {
+		let distance = ((y-dest_y)*(y-dest_y) + (x-dest_x)*(x-dest_x)).sqrt();
+		let vx = SLOW_PROJECTILE_VELOCITY/ distance * (dest_x-x);
+		let vy = SLOW_PROJECTILE_VELOCITY/ distance * (dest_y-y);
+		Projectile {
+			x:x, y:y,
+			vx:vx, vy:vy, 
+			impact: ProjectileImpact::Slow{charges: charges},
+			power: 0.0, 
+			life_time: range / SLOW_PROJECTILE_VELOCITY,
+		}
+	}
 //	METHODS		METHODS		METHODS		METHODS		METHODS		METHODS		METHODS	
 
-	pub fn update (&mut self, dt: f64, enemies: &mut Vec<Box<Enemy>>) {
+	pub fn update (&mut self, dt: f64, enemies: &mut Vec<Box<Enemy>>) -> Option<(f64,f64,f64)> {
+		let mut result = None;
 		self.life_time -= dt;
 		let dx = self.vx * dt;
 		let dy = self.vy * dt;
-		if let Some(i) = enemies_with_segment(enemies, self.x, self.y, dx, dy){
-			self.collide(&mut enemies[i]);
+		
+		match self.impact {
+			ProjectileImpact::Slow{..} => {
+				let mut victims = find_all_enemies_in_rectangle(&enemies, self.x - ROCKET_PROJECTILE_SIZE.0 /2.0, self.y - ROCKET_PROJECTILE_SIZE.1 /2.0, ROCKET_PROJECTILE_SIZE.0, ROCKET_PROJECTILE_SIZE.1);
+				while let Some(i) = victims.pop() {
+					self.collide(&mut enemies[i]);
+				}
+			}
+			_ => { if let Some(i) = enemies_with_segment(&enemies, self.x, self.y, dx, dy){
+					if let Some(explosion_radius) = self.collide(&mut enemies[i]) {
+						let (enemy_x,enemy_y) = enemies[i].get_coordinates(); 
+						let (w,h) = enemies[i].get_size(); 
+						let x = enemy_x + w /2.0;
+						let y = enemy_y + h /2.0;
+						result = Some((x, y, explosion_radius));
+						let mut victims = find_all_enemies_in_circle(&enemies, x, y, explosion_radius);
+						while let Some(i) = victims.pop() {
+							enemies[i].attack_enemy(self.power);
+						}
+					}
+				}
+			}
 		}
+		
 		self.x += dx;
 		self.y += dy;
+		result
 	}
 	
-	fn collide (&mut self, enemy: &mut Box<Enemy>) {
+	// returns maybe the radius of an explosion
+	fn collide (&mut self, enemy: &mut Box<Enemy>) -> Option<f64> {
 		match self.impact {
 			ProjectileImpact::SingleTarget => {
 				enemy.attack_enemy(self.power);
 				self.life_time = -1.0;
+				None
 			},
-			_ => {},
+			ProjectileImpact::Slow{ref mut charges} => {
+				if *charges > 0 {
+					*charges -= enemy.slow_down(*charges);
+				}
+				else {
+					self.life_time = -1.0;
+				}
+				None
+			},
+			ProjectileImpact::AoE{radius} => {
+				self.life_time = -1.0;
+				Some(radius)
+			},
 		}
 	}
 	
@@ -93,14 +143,18 @@ impl Projectile {
 		match self.impact {
 			ProjectileImpact::SingleTarget => {
 				sprite = &sprite_array[0];
-				w = PROJECTILE_SIZE.0;
-				h = PROJECTILE_SIZE.1;
+				w = BASIC_PROJECTILE_SIZE.0;
+				h = BASIC_PROJECTILE_SIZE.1;
 			}
 			ProjectileImpact::AoE{..} => {
+				sprite = &sprite_array[2];
+				w = ROCKET_PROJECTILE_SIZE.0;
+				h = ROCKET_PROJECTILE_SIZE.1;
+			}
+			ProjectileImpact::Slow{..} => {
 				sprite = &sprite_array[1];
-				let (half_w, half_h) = PROJECTILE_SIZE;
-				w = 2.0 * half_w;
-				h = 2.0 * half_h;
+				w = SLOW_PROJECTILE_SIZE.0;
+				h = SLOW_PROJECTILE_SIZE.1;
 			}
 		}
 		let (sprite_w, sprite_h) = sprite.get_size();

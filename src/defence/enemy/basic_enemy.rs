@@ -12,7 +12,6 @@ impl BasicEnemy {
 		let attr = EnemyAttributes {
 			x: x-(STD_ENEMY_W/2.0), y: y,
 			w:STD_ENEMY_W, h:STD_ENEMY_H ,
-			life: 100.0,
 			speed: 2,
 			health: 100.0, max_health: 100.0,
 			attack: STD_ENEMY_ATTACK, attack_ratio: STD_ENEMY_ATTACK_RATIO, attack_reload: 0.0,

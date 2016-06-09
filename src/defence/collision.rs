@@ -28,6 +28,17 @@ pub fn enemies_with_rectangle(collection: &Vec<Box<Enemy>>, x: f64, y: f64, w: f
 	false
 }
 
+pub fn find_all_enemies_in_rectangle(collection: &Vec<Box<Enemy>>, x: f64, y: f64, w: f64, h: f64) -> Vec<usize> {
+	let mut result = Vec::new();
+	for (i, t) in collection.iter().enumerate() {
+		let (x0,y0) = t.get_coordinates();
+		let (w0,h0) = t.get_size();
+		if !((x+w) < x0 || x > (x0 + w0) || (y+h) < y0 || y > (y0 + h0))
+			{ result.push(i) }
+	}
+	result
+}
+
 
 pub fn find_closest_enemy(x: f64, y: f64, enemies: &Vec<Box<Enemy>>) -> Option<usize> {
 	let mut result = None;
@@ -44,6 +55,19 @@ pub fn find_closest_enemy(x: f64, y: f64, enemies: &Vec<Box<Enemy>>) -> Option<u
 	}
 	if let Some ((_, index)) = result { Some(index) }
 	else {None}
+}
+
+/// returns all enemies within the circle at (x,y) with radius r
+pub fn find_all_enemies_in_circle(collection: &Vec<Box<Enemy>>, x: f64, y: f64, r: f64) -> Vec<usize> {
+	let mut result = Vec::new();
+	for (i, e) in collection.iter().enumerate() {
+		let (e_x,e_y) = e.get_coordinates();
+		let (w,h) = e.get_size();
+		if rectangle_with_disk(e_x,e_y,w,h, x,y,r) {
+			result.push(i);
+		}
+	}
+	result
 }
 
 /// Segment is represented with the starting point at [x0,y0] and a vector [s,t]. 
@@ -101,6 +125,22 @@ fn segment_intersection( a:[f64;4], b:[f64;4] ) -> bool {
 	else { false }
 }
 
+// http://stackoverflow.com/questions/401847/circle-rectangle-collision-detection-intersection
+fn rectangle_with_disk(rect_x:f64, rect_y:f64, w:f64, h:f64,  circ_x:f64, circ_y:f64, r:f64) -> bool {
+	let circle_distance_x = (circ_x - (rect_x + w/2.0)).abs();
+    let circle_distance_y = (circ_y - (rect_y + h/2.0)).abs();
+
+    if circle_distance_x > (w/2.0 + r) { return false; }
+    if circle_distance_y > (h/2.0 + r) { return false; }
+
+    if circle_distance_x <= (w/2.0) { return true; } 
+    if circle_distance_y <= (h/2.0) { return true; }
+
+    let corner_distance_sq = (circle_distance_x - w/2.0).powi(2) + (circle_distance_y - h/2.0).powi(2);
+	
+	corner_distance_sq <= r.powi(2)
+}
+
 #[test]
 fn segment_intersection_test(){
 	assert!( segment_intersection([0.0,0.0,1.0,1.0],[1.0,0.0,-1.0,1.0]) ); // intersecting
@@ -112,7 +152,7 @@ fn segment_intersection_test(){
 }
 
 
-pub fn find_enemies_in_circle(enemies: &Vec<Box<Enemy>>, x:f64, y:f64, r:f64) -> Vec<usize> {
+/*pub fn find_enemies_in_circle(enemies: &Vec<Box<Enemy>>, x:f64, y:f64, r:f64) -> Vec<usize> {
 	let mut result = Vec::new();
 	for (i, e) in enemies.iter().enumerate() {
 		let (x0,y0) = e.get_coordinates();
@@ -123,4 +163,4 @@ pub fn find_enemies_in_circle(enemies: &Vec<Box<Enemy>>, x:f64, y:f64, r:f64) ->
 		{ result.push(i); }
 	}
 	result
-}
+}*/

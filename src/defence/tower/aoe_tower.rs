@@ -57,7 +57,7 @@ impl Tower for AoeTower {
 		let center_y = self.attributes.y + h / 2.0;
 		let range = apply_range_bonus(self.range, upgrades.tower_upgrades[self.get_tower_type_id()][2]);
 		let ap = apply_attack_bonus(self.attributes.attack_power, upgrades.tower_upgrades[self.get_tower_type_id()][0]);
-		let to_attack = find_enemies_in_circle(enemies, center_x, center_y, range);
+		let to_attack = find_all_enemies_in_circle(enemies, center_x, center_y, range);
 		for &i in to_attack.iter() {
 			enemies[i].attack_enemy(ap);
 		}

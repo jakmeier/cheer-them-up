@@ -84,6 +84,8 @@ impl Map{
 							"build_blacksmith_ii.png",
 							"build_barracks.png",
 							"build_archery_range.png", //25
+							"candy.png",
+							"chocolate.png",
 							] ;
 		let folder = find_folder::Search::ParentsThenKids(3, 3).for_folder("button").unwrap();
 		for s in sprite_names.iter() {

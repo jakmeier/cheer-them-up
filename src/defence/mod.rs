@@ -45,6 +45,7 @@ pub struct Defence {
 	enemy_sprites: Vec<Texture<Resources>>,
 	projectiles: Vec<Projectile>,
 	projectile_sprites: Vec<Texture<Resources>>,
+	explosions: Vec<((f64, f64, f64), f64)>,
 }
 
 impl Defence {
@@ -107,6 +108,8 @@ impl Defence {
 			Box::new(basic_tower::BasicTower::new(0.0, 0.0, &state)),
 			Box::new(aoe_tower::AoeTower::new(0.0, 0.0, &state)),
 			Box::new(wall::Wall::new(0.0, 0.0, &state)),
+			Box::new(slow_tower::SlowTower::new(0.0, 0.0, &state)),
+			Box::new(rocket_tower::RocketTower::new(0.0, 0.0, &state)),
 		];
 		
 		let shop = shop::Shop::new();
@@ -126,9 +129,22 @@ impl Defence {
 			enemy_sprites: enemy_sprites,
 			projectiles: pros, 
 			projectile_sprites: projectile_sprites,
+			explosions: Vec::new(),
 		}
 	}
 	pub fn on_update(&mut self, upd: UpdateArgs, state: &GameState) {
+		
+		// animations
+		let mut to_remove = Vec::new();
+		for (i, expl) in self.explosions.iter_mut().enumerate() {
+			expl.1 -= upd.dt;
+			if expl.1 <= 0.0 {
+				to_remove.push(i);
+			}
+		}
+		while let Some(i) = to_remove.pop() {
+			self.explosions.swap_remove(i);
+		}
 		
 		// enemy creation
 		self.controller.update(upd.dt, &mut self.enemies);
@@ -156,7 +172,9 @@ impl Defence {
 		// projectiles 
 		let mut to_remove = Vec::new();
 		for (i, p) in self.projectiles.iter_mut().enumerate() {
-			p.update(upd.dt, &mut self.enemies);
+			if let Some(explosion) = p.update(upd.dt, &mut self.enemies) {
+				self.explosions.push((explosion, EXPLOSION_VISIBILITY_TIME));
+			}
 			if p.is_dead() { to_remove.push(i); }
 		}
 		while let Some(i) = to_remove.pop() {
@@ -252,6 +270,12 @@ impl Defence {
 			p.draw(g, view, dx, dy, &self.projectile_sprites);
 		}
 		
+		// explosions
+		for &((x,y,r),_) in self.explosions.iter() {
+			ellipse([0.5,0.1,0.1,0.5], [x-r, y-r, 2.0*r , 2.0*r], view.scale(dx,dy), g );
+		}
+		
+		
 		// shop
 		let draw_req = self.shop.draw(g, view.trans(0.0, battlefield_h), w, h - battlefield_h, [mouse[0], mouse[1] - battlefield_h], &self.tower_sprites, dx, dy, state);
 		match draw_req{
@@ -285,6 +309,8 @@ impl Defence {
 			BASIC_TID => Box::new(tower::basic_tower::BasicTower::new(x, y, &state)),
 			AOE_TID => Box::new(tower::aoe_tower::AoeTower::new(x, y, &state)),
 			WALL_TID => Box::new(tower::wall::Wall::new(x, y, &state)),
+			SLOW_TID => Box::new(tower::slow_tower::SlowTower::new(x, y, &state)),
+			ROCKET_TID => Box::new(tower::rocket_tower::RocketTower::new(x, y, &state)),
 			_ => panic!("Unexpected tower ID: {}", tower_id),
 		};
 		let (w,h) = new_tower.get_tower_size();

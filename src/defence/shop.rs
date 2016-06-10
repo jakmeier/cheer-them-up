@@ -42,6 +42,7 @@ impl Shop {
 		None
 	}
 	
+	#[allow(unused_variables)]
 	pub fn draw (&mut self, g: &mut GfxGraphics<Resources, CommandBuffer>, view: math::Matrix2d, w: f64, h:f64, mouse: [f64;2], sprite_array: &[Texture<Resources>], dx: f64, dy: f64, state: &GameState) -> Option<DrawRequest> {
 		
 		self.w = w;

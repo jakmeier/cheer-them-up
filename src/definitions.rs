@@ -84,4 +84,39 @@ impl GameState{
 	}
 }
 
+/// Used to save all kinds of statistics. With this statistics, a score can be computet by this struct.
+pub struct Statistics {
+	units_killed: u32,
+	wins_game_one: u32,
+	wins_game_two: u32, 
+	resources_produced: [u32;4],
+}
 
+impl Statistics {
+	pub fn new() -> Statistics {
+		Statistics {
+			units_killed: 0,
+			wins_game_one: 0,
+			wins_game_two: 0, 
+			resources_produced: [0;4],
+		}
+	}
+	pub fn add_win_game_one(&mut self) { self.wins_game_one += 1; }
+	pub fn add_win_game_two(&mut self) { self.wins_game_two += 1; }
+	pub fn add_unit_kill(&mut self) { self.units_killed += 1; }
+	pub fn resources_produced(&mut self, res: [u32;4]) { 
+		for i in 0..4 {
+			self.resources_produced[i] += res[i]; 
+		}
+	}
+	
+	pub fn get_score(&self) -> u32 {
+		let mut score = self.units_killed * 20;
+		score += self.wins_game_one * 5;
+		score += self.wins_game_two * 5;
+		for i in 0..4 {
+			score += self.resources_produced[i]; 
+		}
+		score
+	} 
+}

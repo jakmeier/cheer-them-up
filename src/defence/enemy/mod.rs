@@ -17,6 +17,8 @@ use super::tower::Tower;
 use constants::*;
 
 pub mod basic_enemy;
+pub mod slow_enemy;
+pub mod fast_enemy;
 
 pub struct EnemyAttributes {
 	x: f64, y: f64,
@@ -81,7 +83,8 @@ pub trait Enemy {
 		}
 	}
 	
-	fn update(&mut self, dt: f64, spm: &JkmShortestPathMap, towers: &mut Vec<Box<Tower>> ) {
+	/// Returns true when the enemy reached the base, false otherwise
+	fn update(&mut self, dt: f64, spm: &JkmShortestPathMap, towers: &mut Vec<Box<Tower>> ) -> bool {
 		
 		//WALKING ( Open path to destination )
 		if !self.get().base_reached && !self.get().berserker_mode {
@@ -95,11 +98,7 @@ pub trait Enemy {
 		
 		// BASE REACHED
 		else if self.get().base_reached {
-			debug_assert!(self.get().base_reached);
-			let (x, _) = self.get_coordinates();
-			self.set_coordinates(x, 0.0);
-			self.get_mut().base_reached = false;
-			self.get_mut().berserker_mode = false;
+			return true;
 		}
 		
 		// BERSERKER MODE
@@ -112,8 +111,7 @@ pub trait Enemy {
 				self.find_target(&towers, x, y);
 			}	
 		}
-		
-		
+		false
 	}
 	
 	fn walk_a_step(&mut self, dest_x: f64, dest_y: f64, dt: f64) {
@@ -267,7 +265,7 @@ pub trait Enemy {
 			// Walk down
 			for (i,t) in towers.iter().enumerate() {
 				let (x,y) = t.get_coordinates();
-				let (w,h) = t.get_tower_size();
+				let (w,_) = t.get_tower_size();
 				if enemy_x +enemy_w >= x && enemy_x <= x + w 
 					&& y >= enemy_y //+ enemy_h
 					&& (y-enemy_y-enemy_h).abs() < new_target.0

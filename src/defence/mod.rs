@@ -8,7 +8,7 @@ extern crate jkm_shortest_path_map;
 use self::jkm_shortest_path_map::JkmShortestPathMap;
 
 use constants::*;
-use definitions::{Drawable, DrawRequest, DefenceUserInteraction, GameState};
+use definitions::{Drawable, DrawRequest, DefenceUserInteraction, GameState, Statistics};
 
 mod enemy;
 mod tower;
@@ -46,6 +46,7 @@ pub struct Defence {
 	projectiles: Vec<Projectile>,
 	projectile_sprites: Vec<Texture<Resources>>,
 	explosions: Vec<((f64, f64, f64), f64)>,
+	font: Glyphs,
 }
 
 impl Defence {
@@ -113,7 +114,12 @@ impl Defence {
 		];
 		
 		let shop = shop::Shop::new();
-		//shop.make_available(BASIC_TID);
+		
+		
+		let assets = find_folder::Search::ParentsThenKids(3, 3).for_folder("font").unwrap();
+		let ref font = assets.join("FiraSans-Regular.ttf");
+		let factory = w.factory.borrow().clone();
+		let glyphs = Glyphs::new(font, factory).unwrap();
 		
 		Defence {
 			controller: controller,
@@ -130,9 +136,11 @@ impl Defence {
 			projectiles: pros, 
 			projectile_sprites: projectile_sprites,
 			explosions: Vec::new(),
+			font: glyphs, 
 		}
 	}
-	pub fn on_update(&mut self, upd: UpdateArgs, state: &GameState) {
+	pub fn alive(&self) -> bool { self.hp > 0 }
+	pub fn on_update(&mut self, upd: UpdateArgs, state: &GameState, stats: &mut Statistics) {
 		
 		// animations
 		let mut to_remove = Vec::new();
@@ -189,8 +197,15 @@ impl Defence {
 		}
 		let mut to_remove = Vec::new();
 		for (i, e) in self.enemies.iter_mut().enumerate() {
-			e.update(upd.dt, &self.shortest_path_map, &mut self.towers);
-			if e.is_dead() { to_remove.push(i); }
+			if e.update(upd.dt, &self.shortest_path_map, &mut self.towers) {
+				// base reached
+				self.hp -= 1;
+				to_remove.push(i);
+			}
+			else if e.is_dead() { 
+				to_remove.push(i); 
+				stats.add_unit_kill();
+			}
 		}
 		while let Some(i) = to_remove.pop() {
 			self.enemies.swap_remove(i);
@@ -275,6 +290,8 @@ impl Defence {
 			ellipse([0.5,0.1,0.1,0.5], [x-r, y-r, 2.0*r , 2.0*r], view.scale(dx,dy), g );
 		}
 		
+		// Life display
+		text::Text::new_color([0.05,0.75,0.05,1.0], STD_FONT_SIZE).draw( &(self.hp.to_string()), &mut self.font, &draw_state, view.trans(3.0, battlefield_h ), g);
 		
 		// shop
 		let draw_req = self.shop.draw(g, view.trans(0.0, battlefield_h), w, h - battlefield_h, [mouse[0], mouse[1] - battlefield_h], &self.tower_sprites, dx, dy, state);
@@ -297,7 +314,6 @@ impl Defence {
 			_ => {}
 		}
 		draw_req
-		
 	}
 }
 

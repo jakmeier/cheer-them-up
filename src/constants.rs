@@ -3,11 +3,24 @@
 
 // UI (ALL UI elements should be here, in case different reoultions are supported in the future, this could help a lot.)
 pub const STD_FONT_SIZE: u32 = 20;
+pub const TITLE_FONT_SIZE: u32 = 60;
 pub const HEALTH_BAR_HEIGHT: f64 = 8.0;
 pub const BATTLEFIELD_UI_SCALE: f64 = 1.0;
 
 //Meta
-pub const START_RESSOURCES: [u32;4] = [500,500,500,500];
+pub const START_RESSOURCES: [u32;4] = [0,0,0,0];
+pub const STARTING_LIFES: u32 = 30;
+
+pub const START_TIME_PHASE_2: f64 = 15.0;
+pub const START_TIME_PHASE_3: f64 = 30.0;
+pub const START_TIME_PHASE_4: f64 = 120.0;
+pub const PHASE_SWITCH_TIME: f64 = 2.0;
+/*
+pub const START_TIME_PHASE_2: f64 = 5.0;
+pub const START_TIME_PHASE_3: f64 = 10.0;
+pub const START_TIME_PHASE_4: f64 = 15.0;
+pub const PHASE_SWITCH_TIME: f64 = 1.0;*/
+
 pub const EPS: f64 = 1.0/1048576.0;
 
 // Map
@@ -53,7 +66,7 @@ pub const BANK_UPGRADE_PRICE: [[u32;4]; BANK_UPGRADES] =
 		[35,0,0,20],
 	];
 
-pub const ORACLE_PRICE: [u32;4] = [0,0,0,5];
+pub const ORACLE_PRICE: [u32;4] = [0,0,0,3];
 	
 // UPGRADES / RESEARCHES
 pub const INDUSTRIALISATION_PRICE: [u32;4] = [0,5,5,0];
@@ -91,25 +104,31 @@ pub const ORACLE_RESEARCH_PRICE_LIST: [[u32;4]; ORACLE_RESEARCH_LEVELS] =
 	pub const BF_SHOP_SPLIT_RATIO: f64 = 0.875;
 	
 	// General Sprites
-	
 	pub const GENERAL_BATTLEFIELD_SPRITE_LIST: [&'static str; 2] = ["highway_from_hell.png", "cross.png"];
 	
 	// Enemy
 
 		//ids
+		pub const NUMBER_OF_ES: usize = 3;
 		pub const BASIC_EID: usize = 0;
+		pub const SLOW_EID: usize = 1;
+		pub const FAST_EID: usize = 2;
 		
 		// Speed list
-		pub const ENEMY_SPEED: [f64; 3] = [25.0, 40.0, 75.0 ];
+		pub const ENEMY_SPEED: [f64; 3] = [25.0, 70.0, 110.0 ];
 		
 		// Stats for each enemy type
-		pub const STD_ENEMY_ATTACK: f64 = 7.0;
-		pub const STD_ENEMY_ATTACK_RATIO: f64 = 0.5;
+		pub const ENEMY_ATTACK: [f64; NUMBER_OF_ES] = [7.0, 5.0, 10.0];
+		pub const ENEMY_ATTACK_SCALE: [f64; NUMBER_OF_ES] = [2.0, 1.0, 3.0];
+		pub const ENEMY_ATTACK_RATIO: [f64; NUMBER_OF_ES] = [0.5, 0.3, 0.7];
+		
+		pub const ENEMY_HEALTH: [f64; NUMBER_OF_ES] = [30.0, 10.0, 50.0];
+		pub const ENEMY_HEALTH_SCALE: [f64; NUMBER_OF_ES] = [10.0, 5.0, 20.0];
 		
 		//Sprite constants	
 		
-		pub const ENEMY_SPRITE_LIST: [&'static str; 1] = ["enemy_i.png"];
-		pub const NUMBER_OF_ES: usize = 1;
+		pub const ENEMY_SPRITE_LIST: [&'static str; NUMBER_OF_ES] = ["enemy_i.png", "enemy_ii.png", "enemy_iii.png"];
+		
 		
 		//size
 		pub const STD_ENEMY_W: f64 = 50.0;
@@ -136,7 +155,7 @@ pub const ORACLE_RESEARCH_PRICE_LIST: [[u32;4]; ORACLE_RESEARCH_LEVELS] =
 		pub const TOWER_SIZE_LIST: [(f64,f64);NUMBER_OF_TOWERS] = [(70.0,100.0),(75.0,100.0),(75.0,50.0), (55.0, 80.0), (100.0,140.0) ];
 		pub const TOWER_BASE_HEALTH_LIST: [f64;NUMBER_OF_TOWERS] = [60.0, 100.0, 180.0, 100.0, 150.0];
 		pub const TOWER_BASE_ATTACK_RATIO_LIST: [f64;NUMBER_OF_TOWERS] = [1.0, 1.5, 100.0, 0.75, 1.0];
-		pub const TOWER_BASE_ATTACK_LIST: [f64;NUMBER_OF_TOWERS] = [6.0, 5.0, 0.0, 0.0, 15.0];
+		pub const TOWER_BASE_ATTACK_LIST: [f64;NUMBER_OF_TOWERS] = [10.0, 8.0, 0.0, 0.0, 25.0];
 		pub const TOWER_BASE_RANGE_LIST: [f64;NUMBER_OF_TOWERS] = [300.0, 140.0, 0.0, 200.0, 275.0];
 		
 		pub const EXPLOSION_BASE_RADIUS: f64 = 20.0;

@@ -33,6 +33,7 @@ enum ButtonType{
 	UpgradeCrystal { level: usize },
 	UpgradeTower { tid: usize, kind: TowerAttribute, level: u32 },
 	BuildBlacksmithII, BuildBarracks, BuildArcheryRange,
+	UpgradeCandy {level: u32}, UpgradeSurprise {level: u32},
 }
 
 enum LandType {
@@ -380,6 +381,14 @@ impl Land {
 						sprite_index = Some(25);
 						price = Some(ARCHERY_RANGE_PRICE);
 					}
+					ButtonType::UpgradeCandy{level} => {
+						sprite_index = Some(28);
+						price = Some(tower_upgrade_cost(level));
+					}
+					ButtonType::UpgradeSurprise{level} => {
+						sprite_index = Some(29);
+						price = Some(tower_upgrade_cost(level));
+					}
 				}
 				if let Some(i) = sprite_index {
 					(*b).draw(g, view, &(sprite_array[i]), x, y, 2.0 * d, 2.0 * e);
@@ -481,6 +490,12 @@ impl Land {
 						ButtonType::BuildArcheryRange => {
 							result = Some(MapUserInteraction::BuildArcheryRange{index: 0});
 						}
+						ButtonType::UpgradeCandy{..} => {
+							result = Some(MapUserInteraction::UpgradeCandy);
+						}
+						ButtonType::UpgradeSurprise{..} => {
+							result = Some(MapUserInteraction::UpgradeSurprise);
+						}
 					}
 					break;
 				}
@@ -529,6 +544,12 @@ impl Land {
 					}
 					if !upgrades.tower_researched[ROCKET_TID] && upgrades.industrialisation && level >= 3 {
 						self.buttons.push((JkmButton::new(0.0, 0.0, (2.0  * self.w / 3.0), (2.0 * self.h/ 3.0), JkmStyle::OuterCircle, [0.5,0.5,1.0,0.9]), ButtonType::ResearchTower{index:ROCKET_TID}));
+					}
+					if upgrades.tower_researched[SLOW_TID] && upgrades.industrialisation && level >= 3 {
+						self.buttons.push((JkmButton::new(0.0, 0.0, (2.0  * self.w / 3.0), (2.0 * self.h/ 3.0), JkmStyle::OuterCircle, [0.5, 0.2,0.2,0.9]), ButtonType::UpgradeCandy{level: upgrades.tower_upgrades[SLOW_TID][0] as u32}));
+					}
+					if upgrades.tower_researched[ROCKET_TID] && upgrades.industrialisation && level >= 3 {
+						self.buttons.push((JkmButton::new(0.0, 0.0, (2.0  * self.w / 3.0), (2.0 * self.h/ 3.0), JkmStyle::OuterCircle, [0.5, 0.2,0.2,0.9]), ButtonType::UpgradeSurprise{level: upgrades.tower_upgrades[ROCKET_TID][0] as u32}));
 					}
 					if level < UNIVERSITY_UPGRADES as u32 {self.buttons.push((JkmButton::new(0.0, 0.0, (2.0  *self.w / 3.0), (2.0 * self.h/ 3.0), JkmStyle::OuterCircle, [0.1,0.1,0.1,0.9]), ButtonType::UpgradeUniversity{level:level}));}
 				}

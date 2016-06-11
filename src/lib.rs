@@ -426,6 +426,22 @@ pub struct Game {
 						}
 					}
 				}
+				MapUserInteraction::UpgradeCandy => {
+					if self.cash.test_and_pay(tower_upgrade_cost(self.state.tower_upgrades[SLOW_TID][0] as u32)){
+						self.state.tower_upgrades[SLOW_TID][0] += 1;	
+						self.state.tower_upgrades[SLOW_TID][1] += 1;	
+						self.state.tower_upgrades[SLOW_TID][2] += 1;	
+						self.map.update_all_buttons(&self.state);
+					}
+				}
+				MapUserInteraction::UpgradeSurprise => {
+					if self.cash.test_and_pay(tower_upgrade_cost(self.state.tower_upgrades[ROCKET_TID][0] as u32)){
+						self.state.tower_upgrades[ROCKET_TID][0] += 1;	
+						self.state.tower_upgrades[ROCKET_TID][1] += 1;	
+						self.state.tower_upgrades[ROCKET_TID][2] += 1;	
+						self.map.update_all_buttons(&self.state);
+					}
+				}
 				
 			}
 		}

@@ -33,7 +33,10 @@ impl RocketTower {
 }
 
 fn apply_range_bonus(r: f64, b: u8) -> f64 {
-	r + (b as f64) * 10.0
+	r + (b as f64) * 15.0
+}
+fn apply_explosion_bonus(r: f64, b: u8) -> f64 {
+	r + (b as f64) * 5.0
 }
 fn apply_attack_bonus(a: f64, b: u8) -> f64 {
 	a + (b as f64) * 10.0 
@@ -59,8 +62,9 @@ impl Tower for RocketTower {
 			let distance = ((start_x-x)*(start_x-x) + (start_y-y)*(start_y-y)).sqrt();
 			let range = apply_range_bonus(self.range, upgrades.tower_upgrades[self.get_tower_type_id()][2]);
 			let ap = apply_attack_bonus(self.attributes.attack_power, upgrades.tower_upgrades[self.get_tower_type_id()][0]);
+			let radius = apply_explosion_bonus(self.explosion_radius, upgrades.tower_upgrades[self.get_tower_type_id()][0]);
 			if distance <= range {		
-				Some( Projectile::new_aoe( start_x, start_y, x, y, ap, range, self.explosion_radius) )
+				Some( Projectile::new_aoe( start_x, start_y, x, y, ap, range, radius) )
 			} else {None}
 		} else {None}
 	}

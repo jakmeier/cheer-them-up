@@ -47,6 +47,7 @@ pub enum MapUserInteraction{
 	BuildBlacksmithII {index: u32}, 
 	BuildBarracks {index: u32}, 
 	BuildArcheryRange {index: u32},
+	UpgradeSurprise, UpgradeCandy,
 }
 
 /// Used by the defence module to communicate with the root of the project. Mostly to request constructions and upgrades that are only allowed if there are enough resources.

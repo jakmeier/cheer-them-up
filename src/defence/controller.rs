@@ -10,6 +10,7 @@ pub struct Ctrl {
 	clock: f64, peace_clock: f64,
 	state: u32, highest_state: u32,
 	unit_counter: u32,
+	loop_counter: u32, 
 }
 
 impl Ctrl {
@@ -18,7 +19,8 @@ impl Ctrl {
 			spawn_x: spawn_x, spawn_y: spawn_y,
 			clock: 0.0, peace_clock: 0.0,
 			state: 0, highest_state: 1,
-			unit_counter: 0,
+			unit_counter: 0, 
+			loop_counter: 0,
 			}
 	}
 	
@@ -65,7 +67,7 @@ impl Ctrl {
 				self.state = START_SHORT_BREAK;
 			},
 			
-			// Wave stages
+			// Wave states
 			FIRST_WAVE => {
 				if !self.basic_enemies(vec, 2, 10.0, 0.0)
 					{ self.state = START_NORMAL_BREAK ;}
@@ -73,18 +75,76 @@ impl Ctrl {
 			// FIRST_WAVE + 1 = 11
 			11 => {
 				if !self.basic_enemies(vec, 5, 15.0, 0.0)
-					{ self.state = START_SHORT_BREAK ;}
+					{ self.state = START_NORMAL_BREAK ;}
 			},
 			12 => {
-				if !self.fast_enemies(vec, 5, 5.0, 0.0)
+				if !self.slow_enemies(vec, 5, 20.0, 0.0)
 					{ self.state = START_LONG_BREAK ;}
 			},
 			13 => {
-				if !self.slow_enemies(vec, 5, 20.0, 3.0){ 
+				if !self.basic_enemies(vec, 5, 15.0, 1.0){ 
 						self.state = START_NORMAL_BREAK ;
-						self.highest_state = FIRST_WAVE;
 				}
 			},
+			14 => {
+				if !self.basic_enemies(vec, 10, 20.0, 1.0){ 
+						self.state = START_NORMAL_BREAK ;
+				}
+			},
+			15 => {
+				if !self.fast_enemies(vec, 5, 5.0, 0.0){ 
+						self.state = START_LONG_BREAK ;
+				}
+			},
+			16 => {
+				if !self.basic_enemies(vec, 20, 20.0, 2.0){ 
+						self.state = START_SHORT_BREAK ;
+				}
+			},
+			17 => {
+				if !self.slow_enemies(vec, 10, 15.0, 1.0){ 
+						self.state = START_SHORT_BREAK ;
+				}
+			},
+			18 => {
+				if !self.slow_enemies(vec, 12, 15.0, 2.0){ 
+						self.state = START_NORMAL_BREAK ;
+				}
+			},
+			19 => {
+				if !self.fast_enemies(vec, 10, 20.0, 1.0){ 
+						self.state = START_SHORT_BREAK ;
+				}
+			},
+			20 => {
+				if !self.fast_enemies(vec, 10, 20.0, 2.0){ 
+						self.state = START_NORMAL_BREAK ;
+						self.loop_counter = 2;
+				}
+			},
+			
+			// End loop, spwaning the same waves over and over again with increasing strength
+			21 => {
+				let level = self.loop_counter as f64;
+				if !self.basic_enemies(vec, 15, 20.0, level){ 
+						self.state = START_NORMAL_BREAK ;
+				}
+			},
+			22 => {
+				let level = self.loop_counter as f64;
+				if !self.slow_enemies(vec, 15, 20.0, level){ 
+						self.state = START_NORMAL_BREAK ;
+				}
+			},
+			23 => {
+				let level = self.loop_counter as f64;
+				if !self.fast_enemies(vec, 15, 15.0, level){ 
+						self.state = START_NORMAL_BREAK ;
+						self.loop_counter += 1;
+						self.highest_state = 20; // going to 21 after the break
+				}
+			},
+			
 			
 			_ => { println!("unexpected state: {}", self.state); self.state = RECOVERY_STATE; }
 		}

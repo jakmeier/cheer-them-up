@@ -15,7 +15,10 @@ pub const START_TIME_PHASE_2: f64 = 15.0;
 pub const START_TIME_PHASE_3: f64 = 30.0;
 pub const START_TIME_PHASE_4: f64 = 120.0;
 pub const PHASE_SWITCH_TIME: f64 = 2.0;
+
 /*
+pub const START_RESSOURCES: [u32;4] = [500,500,500,500];
+pub const STARTING_LIFES: u32 = 30;
 pub const START_TIME_PHASE_2: f64 = 5.0;
 pub const START_TIME_PHASE_3: f64 = 10.0;
 pub const START_TIME_PHASE_4: f64 = 15.0;
@@ -42,13 +45,13 @@ pub const IRON_FACTORY_UPGRADE_PRICE: [[u32;4]; IRON_FACTORY_UPGRADES] =
 		[0,40,0,25],
 	];
 
-pub const UNIVERSITY_PRICE: [u32;4] = [5,5,5,5];
+pub const UNIVERSITY_PRICE: [u32;4] = [2,2,2,2];
 pub const UNIVERSITY_UPGRADES: usize = 3;
 pub const UPGRADE_UNIVERSITY_PRICE: [[u32;4]; UNIVERSITY_UPGRADES] = 
 	[	
-		[10,0,0,5],
+		[5,0,0,1],
+		[8,0,0,3],
 		[15,0,0,10],
-		[30,0,0,20],
 	];
 pub const BLACKSMITH_PRICE: [u32;4] = [0,5,5,0];
 pub const BLACKSMITH_II_PRICE: [u32;4] = [0,5,8,0];
@@ -69,8 +72,8 @@ pub const BANK_UPGRADE_PRICE: [[u32;4]; BANK_UPGRADES] =
 pub const ORACLE_PRICE: [u32;4] = [0,0,0,3];
 	
 // UPGRADES / RESEARCHES
-pub const INDUSTRIALISATION_PRICE: [u32;4] = [0,5,5,0];
-pub const ECONOMY_RESEARCH_PRICE: [u32;4] = [10,5,5,5];
+pub const INDUSTRIALISATION_PRICE: [u32;4] = [0,0,10,0];
+pub const ECONOMY_RESEARCH_PRICE: [u32;4] = [5,0,10,0];
 pub const RESEARCH_TOWER_PRICE_LIST: [[u32;4]; NUMBER_OF_TOWERS] = 
 	[
 		[0,0,0,0],
@@ -146,14 +149,14 @@ pub const ORACLE_RESEARCH_PRICE_LIST: [[u32;4]; ORACLE_RESEARCH_LEVELS] =
 		pub const NUMBER_OF_TOWERS: usize = 5;
 		pub const TOWER_SPRITE_LIST: [&'static str; NUMBER_OF_TOWERS] =["jar.png", "box.png", "fence.png", "cotton_candy.png", "surprise.png"];
 		pub const TOWER_PRICE_LIST: [[u32;4];NUMBER_OF_TOWERS] = [
-				[2,0,0,2],
+				[2,0,2,0],
 				[0,4,0,0],
 				[0,0,5,0],
-				[5,0,0,1],
-				[5,5,10,5],
+				[5,0,5,1],
+				[5,5,10,4],
 			];
 		pub const TOWER_SIZE_LIST: [(f64,f64);NUMBER_OF_TOWERS] = [(70.0,100.0),(75.0,100.0),(75.0,50.0), (55.0, 80.0), (100.0,140.0) ];
-		pub const TOWER_BASE_HEALTH_LIST: [f64;NUMBER_OF_TOWERS] = [60.0, 100.0, 180.0, 100.0, 150.0];
+		pub const TOWER_BASE_HEALTH_LIST: [f64;NUMBER_OF_TOWERS] = [60.0, 100.0, 200.0, 100.0, 150.0];
 		pub const TOWER_BASE_ATTACK_RATIO_LIST: [f64;NUMBER_OF_TOWERS] = [1.0, 1.5, 100.0, 0.75, 1.0];
 		pub const TOWER_BASE_ATTACK_LIST: [f64;NUMBER_OF_TOWERS] = [10.0, 8.0, 0.0, 0.0, 25.0];
 		pub const TOWER_BASE_RANGE_LIST: [f64;NUMBER_OF_TOWERS] = [300.0, 140.0, 0.0, 200.0, 275.0];

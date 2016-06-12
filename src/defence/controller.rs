@@ -127,19 +127,19 @@ impl Ctrl {
 			21 => {
 				let level = self.loop_counter as f64;
 				if !self.basic_enemies(vec, 15, 20.0, level){ 
-						self.state = START_NORMAL_BREAK ;
+						self.state = START_SHORT_BREAK ;
 				}
 			},
 			22 => {
 				let level = self.loop_counter as f64;
 				if !self.slow_enemies(vec, 15, 20.0, level){ 
-						self.state = START_NORMAL_BREAK ;
+						self.state = START_SHORT_BREAK ;
 				}
 			},
 			23 => {
 				let level = self.loop_counter as f64;
 				if !self.fast_enemies(vec, 15, 15.0, level){ 
-						self.state = START_NORMAL_BREAK ;
+						self.state = START_SHORT_BREAK ;
 						self.loop_counter += 1;
 						self.highest_state = 20; // going to 21 after the break
 				}

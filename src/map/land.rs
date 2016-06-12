@@ -325,11 +325,11 @@ impl Land {
 							}
 							SLOW_TID => {
 								sprite_index = Some(26);
-								price = Some(RESEARCH_TOWER_PRICE_LIST[WALL_TID]);
+								price = Some(RESEARCH_TOWER_PRICE_LIST[SLOW_TID]);
 							}
 							ROCKET_TID => {
 								sprite_index = Some(27);
-								price = Some(RESEARCH_TOWER_PRICE_LIST[WALL_TID]);
+								price = Some(RESEARCH_TOWER_PRICE_LIST[ROCKET_TID]);
 							}
 							_ => {
 								println!("Unexpected index for tower research: {}", index);

@@ -7,8 +7,10 @@
 extern crate jkm_shortest_path_map;
 use self::jkm_shortest_path_map::JkmShortestPathMap;
 
+use std::rc::Rc;
+
 use constants::*;
-use definitions::{Drawable, DrawRequest, DefenceUserInteraction, GameState, Statistics};
+use definitions::{Drawable, DrawRequest, DefenceUserInteraction, GameState, Statistics, Settings};
 
 mod enemy;
 mod tower;
@@ -47,11 +49,12 @@ pub struct Defence {
 	projectile_sprites: Vec<Texture<Resources>>,
 	explosions: Vec<((f64, f64, f64), f64)>,
 	font: Glyphs,
+	config: Rc<Settings>
 }
 
 impl Defence {
 	/// width and height are not related to the actual drawn size, they only define the size of the battle field, i.e. how many objects can fit on it.
-	pub fn new (w: &PistonWindow, hp: u32, width: f64, height: f64, state: &GameState) -> Defence {
+	pub fn new (w: &PistonWindow, hp: u32, width: f64, height: f64, state: &GameState, config: &Rc<Settings>) -> Defence {
 		let controller = controller::Ctrl::new(width/2.0, 0.0);
 		
 		let bf_height = height * BF_SHOP_SPLIT_RATIO;
@@ -113,7 +116,7 @@ impl Defence {
 			Box::new(rocket_tower::RocketTower::new(0.0, 0.0, &state)),
 		];
 		
-		let shop = shop::Shop::new();
+		let shop = shop::Shop::new(&config);
 		
 		
 		let assets = find_folder::Search::ParentsThenKids(3, 3).for_folder("font").unwrap();
@@ -137,6 +140,7 @@ impl Defence {
 			projectile_sprites: projectile_sprites,
 			explosions: Vec::new(),
 			font: glyphs, 
+			config: config.clone(),
 		}
 	}
 	pub fn alive(&self) -> bool { self.hp > 0 }
@@ -291,7 +295,7 @@ impl Defence {
 		}
 		
 		// Life display
-		text::Text::new_color([0.05,0.75,0.05,1.0], STD_FONT_SIZE).draw( &(self.hp.to_string()), &mut self.font, &draw_state, view.trans(3.0, battlefield_h ), g);
+		text::Text::new_color([0.05,0.75,0.05,1.0], self.config.get_std_font_size()).draw( &(self.hp.to_string()), &mut self.font, &draw_state, view.trans(3.0, battlefield_h ), g);
 		
 		// shop
 		let draw_req = self.shop.draw(g, view.trans(0.0, battlefield_h), w, h - battlefield_h, [mouse[0], mouse[1] - battlefield_h], &self.tower_sprites, dx, dy, state);
@@ -304,9 +308,9 @@ impl Defence {
 				if !self.valid_tower_place(x, y, w, h) {
 					let red_cross = &self.general_sprites[1];
 					let (sprite_w, sprite_h) = red_cross.get_size();
-					let x_scale = 25.0 * BATTLEFIELD_UI_SCALE/(sprite_w as f64);
-					let y_scale = 25.0 * BATTLEFIELD_UI_SCALE/(sprite_h as f64);
-					let x = mouse[0] + w*self.dx - 25.0 * BATTLEFIELD_UI_SCALE;
+					let x_scale = 40.0 * self.config.get_battlefield_scaling_factor()/(sprite_w as f64);
+					let y_scale = 40.0 * self.config.get_battlefield_scaling_factor()/(sprite_h as f64);
+					let x = mouse[0] + w*self.dx - 40.0 * self.config.get_battlefield_scaling_factor();
 					let y = mouse[1];
 					image(red_cross, view.trans(x,y).scale(x_scale, y_scale), g);
 				}

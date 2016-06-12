@@ -4,25 +4,28 @@
 
 //! The user interface for the tower defence. Towers and Walls, which are mostly treated like towers anyway, can be bought as well as some cool other features might be implemented in the future. 
 
+use std::rc::Rc;
+
 use constants::*;
-use definitions::{DrawRequest, DefenceUserInteraction, GameState};
+use definitions::{DrawRequest, DefenceUserInteraction, GameState, Settings};
 
 use piston_window::*;
 use gfx_device_gl::Resources;
 use gfx_device_gl::command::CommandBuffer;
 use gfx_graphics::GfxGraphics;
-//use find_folder;
 
 pub struct Shop {
 	selected: Option<usize>,
 	w: f64, h: f64,
+	config: Rc<Settings>,
 }
 
 impl Shop {
-	pub fn new() -> Shop {
+	pub fn new(config: &Rc<Settings>) -> Shop {
 		Shop {
 			selected: None,
 			w: 1.0, h: 1.0,
+			config: config.clone(),
 		}
 	}
 	
@@ -81,7 +84,7 @@ impl Shop {
 		
 		// Price Draw request 
 		if let Some(i) = self.find_button(x,y, state) {
-			return Some(DrawRequest::ResourcePrice{price: TOWER_PRICE_LIST[i], coordinates: view.trans(x,y), font_size: STD_FONT_SIZE});
+			return Some(DrawRequest::ResourcePrice{price: TOWER_PRICE_LIST[i], coordinates: view.trans(x,y), font_size: self.config.get_std_font_size()});
 		}
 				
 		None

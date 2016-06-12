@@ -18,12 +18,13 @@ extern crate find_folder;
 extern crate freetype;
 extern crate rand;
 
+use std::rc::Rc;
 
 use micro::{PersistentWinnerState, AbsolutelyChangeableState, AI, ClickableGame};
 use piston_window::*;
 
 use constants::*;
-use definitions::{DrawRequest, Drawable, DefenceUserInteraction, MapUserInteraction, GameState, TowerAttribute, Statistics};
+use definitions::{DrawRequest, Drawable, DefenceUserInteraction, MapUserInteraction, GameState, TowerAttribute, Statistics, Settings};
 
 
 /// Root structure for the game. It contains all the mini games (micro) as well as the higher level game parts (macro) and connects them.
@@ -44,17 +45,15 @@ pub struct Game {
 		stats: Statistics,
 		paused: bool,
 		font: Glyphs,
+		config: Rc<Settings>,
 	}
 	
 	impl Game {
-		pub fn new(w: &PistonWindow) -> Game {
+		pub fn new(w: &PistonWindow, config: &Rc<Settings>) -> Game {
 			
 			let screen_width = w.size().width as f64;
 			let screen_height = w.size().height as f64;
 			let header_height = screen_height * 0.05;
-			/*let map_height = screen_height * 0.65;
-			let def_split = screen_width * 0.625;
-			let x_seperation = def_split * 0.7;*/
 			
 			let mut state = GameState::new();
 			state.tower_researched[BASIC_TID] = true;
@@ -73,7 +72,7 @@ pub struct Game {
 				map: map::Map::new(w, 10, 6),
 				mini_game: micro::rock_paper_scissors::GameObj::new(w),
 				game_two: micro::tic_tac_toe::TicTacToeData::new(w, [0, 0, 1, 0], [0, 0, 0, 2]),
-				defence: defence::Defence::new(w, STARTING_LIFES, BATTLEFIELD_W, BATTLEFIELD_H, &state),
+				defence: defence::Defence::new(w, STARTING_LIFES, BATTLEFIELD_W, BATTLEFIELD_H, &state, &config),
 				clock: 0.0,
 				coin_paid: false,
 				cash: cash::CashHeader::new(w),
@@ -81,6 +80,7 @@ pub struct Game {
 				stats: Statistics::new(),
 				paused: true,
 				font: glyphs,
+				config: config.clone(),
 			}
 		}
 		pub fn on_update(&mut self, upd: UpdateArgs) {
@@ -108,7 +108,9 @@ pub struct Game {
 					self.mini_game.lock_input(false);
 					self.mini_game.set_visibility(true, false);
 					if self.mini_game.get_winner() == 1 {
-						self.cash.add_coins( constants::apply_bonus(1, self.state.gold_upgrade as u32)); 
+						let reward = constants::apply_bonus(1, self.state.gold_upgrade as u32);
+						self.cash.add_coins(reward); 
+						self.stats.resources_produced( [reward,0,0,0]); 
 						self.stats.add_win_game_one();
 					}
 					self.coin_paid = true;
@@ -177,14 +179,6 @@ pub struct Game {
 				clear([1.0, 1.0, 1.0, 1.0], g);				
 				self.cash.draw(g, c.transform, c.draw_state, self.screen_width, self.header_height, [self.mouse_x, self.mouse_y]);
 				
-				//map
-				match self.map.draw(g, c.transform.trans(0.0, self.header_height), c.draw_state, self.eco_def_split_coordinate, self.game_split_coordinates[1]-self.header_height, [self.mouse_x, self.mouse_y-self.header_height])
-				{
-					Some(DrawRequest::ResourcePrice{price, coordinates, font_size}) => {
-						self.cash.draw_resource_price(g, coordinates, c.draw_state, price, font_size);
-					}
-					_ => {}
-				}
 				//defence
 				match self.defence.draw(g, c.transform.trans(self.eco_def_split_coordinate, self.header_height), c.draw_state, (self.screen_width - self.eco_def_split_coordinate), (self.screen_height-self.header_height), [self.mouse_x-self.eco_def_split_coordinate, self.mouse_y-self.header_height], &self.state)
 				{
@@ -197,6 +191,15 @@ pub struct Game {
 				self.mini_game.draw(g, c.transform.trans(0.0, self.game_split_coordinates[1]), c.draw_state, self.game_split_coordinates[0], self.screen_height - self.game_split_coordinates[1], [self.mouse_x, self.mouse_y-self.game_split_coordinates[1]]);
 				self.game_two.draw(g, c.transform.trans(self.game_split_coordinates[0], self.game_split_coordinates[1]), c.draw_state, self.eco_def_split_coordinate - self.game_split_coordinates[0], self.screen_height - self.game_split_coordinates[1], [self.mouse_x - self.game_split_coordinates[0], self.mouse_y - self.game_split_coordinates[1]]);
 				
+				//map
+				match self.map.draw(g, c.transform.trans(0.0, self.header_height), c.draw_state, self.eco_def_split_coordinate, self.game_split_coordinates[1]-self.header_height, [self.mouse_x, self.mouse_y-self.header_height])
+				{
+					Some(DrawRequest::ResourcePrice{price, coordinates, font_size}) => {
+						self.cash.draw_resource_price(g, coordinates, c.draw_state, price, font_size);
+					}
+					_ => {}
+				}
+				
 				if self.paused {
 					// draw overlay
 					rectangle([0.2, 0.2, 0.2, 0.9], [0.1 * self.screen_width, 0.1 * self.screen_height, 0.8 * self.screen_width, 0.8 * self.screen_height ], c.transform, g);
@@ -206,9 +209,9 @@ pub struct Game {
 					else {
 						"     Game over     "
 					};
-					text::Text::new_color([1.0,1.0,1.0,1.0], TITLE_FONT_SIZE).draw( message, &mut self.font, &c.draw_state, c.transform.trans(0.2 * self.screen_width, 0.4 * self.screen_height), g);
-					text::Text::new_color([1.0,1.0,1.0,1.0], TITLE_FONT_SIZE).draw( "Score: ", &mut self.font, &c.draw_state, c.transform.trans(0.2 * self.screen_width, 0.8 * self.screen_height), g);
-					text::Text::new_color([1.0,1.0,1.0,1.0], TITLE_FONT_SIZE).draw( &(self.stats.get_score().to_string()), &mut self.font, &c.draw_state, c.transform.trans(0.6 * self.screen_width, 0.8 * self.screen_height), g);
+					text::Text::new_color([1.0,1.0,1.0,1.0], self.config.get_title_font_size()).draw( message, &mut self.font, &c.draw_state, c.transform.trans(0.2 * self.screen_width, 0.4 * self.screen_height), g);
+					text::Text::new_color([1.0,1.0,1.0,1.0], self.config.get_title_font_size()).draw( "Score: ", &mut self.font, &c.draw_state, c.transform.trans(0.2 * self.screen_width, 0.8 * self.screen_height), g);
+					text::Text::new_color([1.0,1.0,1.0,1.0], self.config.get_title_font_size()).draw( &(self.stats.get_score().to_string()), &mut self.font, &c.draw_state, c.transform.trans(0.6 * self.screen_width, 0.8 * self.screen_height), g);
 				}
 			
 			});
@@ -282,6 +285,7 @@ pub struct Game {
 										let i = constants::apply_bonus(reward[2], self.state.iron_upgrade as u32);
 										let c = constants::apply_bonus(reward[3], self.state.crystal_upgrade as u32);
 										self.cash.add_resources([g, reward[1], i, c]);
+										self.stats.resources_produced([g, reward[1], i, c]);
 										self.stats.add_win_game_two();
 									}
 								
@@ -345,6 +349,7 @@ pub struct Game {
 					self.cash.add_wood(wood);
 					self.cash.add_iron(iron);
 					self.cash.add_crystals(crystals);
+					self.stats.resources_produced([coins, wood, iron, crystals]);
 				}
 				MapUserInteraction::BuildBlacksmith{index} => {
 					if self.cash.test_and_pay(BLACKSMITH_PRICE){

@@ -1,4 +1,7 @@
-//! Traits, Structs, Enums that don't belong toa specific module are defined in here.
+//! Traits, Structs, Enums that don't belong to a specific module are defined in here.
+
+use std::fs::File;
+use std::io::prelude::*;
 
 use piston_window::*;
 use gfx_device_gl;
@@ -120,4 +123,132 @@ impl Statistics {
 		}
 		score
 	} 
+}
+
+/// Stores values loaded from the config.txt file and makes  them available to the app
+pub struct Settings {
+	screen_width: u32, screen_height: u32,
+	general_scaling_factor: f64, battlefield_scaling_factor: f64,
+	std_font_size: u32, title_font_size: u32, 
+}
+
+// constructors
+impl Settings {
+	/// creates a new Settings object with the standar values:
+	/**
+	* screen_width: 960,
+	* screen_height: 590,
+	* general_scaling_factor: 1.0, 
+	* battlefield_scaling_factor: 1.0,
+	* std_font_size: 20, 
+	* title_font_size: 60,
+	**/
+	pub fn new() -> Settings {
+		Settings {
+			screen_width: 960,
+			screen_height: 590,
+			general_scaling_factor: 1.0, battlefield_scaling_factor: 1.0,
+			std_font_size: 20, title_font_size: 60,
+		}
+	}
+	
+	pub fn from_file(path: &str) -> Settings {
+		let mut result = Settings::new();
+		match File::open(&path) {
+			Err(e) => {
+				println!("Configuration file could not be found.");
+				println!("{}", e);
+				println!("The standard configuration will be used.");
+			},
+			Ok(mut file) => {
+				let mut s = "".to_string();
+				match file.read_to_string(&mut s) {
+					Err(e) => {
+						println!("Cannot read configuration file.");
+						println!("{}", e);
+						println!("The standard configuration will be used.");
+						
+					},
+					Ok(_) => {
+						let mut key = "".to_string();
+						let mut value = "".to_string();
+						let mut buf = s.chars();
+						while let Some(mut c) = buf.next() {
+							if c == '#' {
+								if let Some(just_c) = buf.next() {c = just_c} else { println!("Configuration file ended unexpectedly."); break; }
+								while c != ']' {
+									key.push(c);
+									if let Some(just_c) = buf.next() {c = just_c} else { println!("Configuration file ended unexpectedly."); break; }
+								}
+								if c != ']' { println!("Corrupted configuration file, unexpected char near {}. Expected ] , found {}. ", key, c); }
+								if let Some(just_c) = buf.next() {c = just_c} else { println!("Configuration file ended unexpectedly."); break; }
+								if c != '[' { println!("Corrupted configuration file, unexpected char near {}. Expected [ , found {}. ", key, c); }
+								else {
+									if let Some(just_c) = buf.next() {c = just_c} else { println!("Configuration file ended unexpectedly."); break; }
+									while c != ']' {
+										value.push(c);
+										if let Some(just_c) = buf.next() {c = just_c} else { println!("Configuration file ended unexpectedly."); break; }
+									}
+									let v : f64 = if let Ok(v) = value.parse::<f64>(){v}
+											else if let Ok(v) = value.parse::<u32>(){v as f64}
+											else { println!("File corrupted: No value for key {}.", key); break;};
+									match &key[..] {
+										"001" => result.screen_width = v as u32,
+										"002" => result.screen_height = v as u32,
+										"003" => result.general_scaling_factor = v,
+										"004" => result.battlefield_scaling_factor = v,
+										"005" => result.std_font_size = v as u32,
+										"006" => result.title_font_size = v as u32,
+										_ => println!("Corrupted configuration file, unexpected key: {}. Value was {}. ", key, v)
+									}
+									key = "".to_string();
+									value = "".to_string();
+								}
+							}
+						}
+					}
+				}
+			}
+		}
+		result
+	}
+}
+
+// getter and setter
+impl Settings {
+	pub fn set_screen_dimensions(&mut self, wh: (u32,u32)) {
+		self.screen_width = wh.0;
+		self.screen_height = wh.1;
+	}
+	pub fn get_screen_dimensions(&self) -> (u32,u32) {
+		(self.screen_width, self.screen_height)
+	}
+	
+	pub fn set_general_scaling_factor(&mut self, q: f64) {
+		self.general_scaling_factor = q;
+	}
+	pub fn get_general_scaling_factor(&self) -> f64 {
+		self.general_scaling_factor
+	}
+	
+	pub fn set_battlefield_scaling_factor(&mut self, q: f64) {
+		self.battlefield_scaling_factor = q;
+	}
+	pub fn get_battlefield_scaling_factor(&self) -> f64{
+		self.battlefield_scaling_factor
+	}
+	
+	pub fn set_base_std_font_size(&mut self, s: u32) {
+		self.std_font_size = s;
+	}
+	pub fn get_std_font_size(&self) -> u32 {
+		(self.std_font_size as f64 * self.general_scaling_factor) as u32
+	}
+
+	pub fn set_base_title_font_size(&mut self, s: u32) {
+		self.title_font_size = s;
+	}	
+	pub fn get_title_font_size(&self) -> u32 {
+		(self.title_font_size as f64 * self.general_scaling_factor) as u32
+	}
 }

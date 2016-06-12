@@ -1,15 +1,18 @@
 //! Contains constants used in the game to balance it. At the moment there is only one difficulty, but maybe there will be more later.
 
 
-// UI (ALL UI elements should be here, in case different reoultions are supported in the future, this could help a lot.)
-pub const STD_FONT_SIZE: u32 = 20;
-pub const TITLE_FONT_SIZE: u32 = 60;
+// UI (ALL UI elements should be here, in case different resolutions are supported in the future, this could help a lot.)
+//pub const GENERAL_SCALE_FACTOR: f64 = 3.0;
+
+//pub const STD_FONT_SIZE: u32 = 20; //* GENERAL_SCALE_FACTOR as u32;
+//pub const TITLE_FONT_SIZE: u32 = 60;// * GENERAL_SCALE_FACTOR as u32;
+//pub const BATTLEFIELD_UI_SCALE: f64 = 1.0 * GENERAL_SCALE_FACTOR;
+
 pub const HEALTH_BAR_HEIGHT: f64 = 8.0;
-pub const BATTLEFIELD_UI_SCALE: f64 = 1.0;
 
 //Meta
 pub const START_RESSOURCES: [u32;4] = [0,0,0,0];
-pub const STARTING_LIFES: u32 = 30;
+pub const STARTING_LIFES: u32 = 50;
 
 pub const START_TIME_PHASE_2: f64 = 15.0;
 pub const START_TIME_PHASE_3: f64 = 30.0;
@@ -125,8 +128,8 @@ pub const ORACLE_RESEARCH_PRICE_LIST: [[u32;4]; ORACLE_RESEARCH_LEVELS] =
 		pub const ENEMY_ATTACK_SCALE: [f64; NUMBER_OF_ES] = [2.0, 1.0, 3.0];
 		pub const ENEMY_ATTACK_RATIO: [f64; NUMBER_OF_ES] = [0.5, 0.3, 0.7];
 		
-		pub const ENEMY_HEALTH: [f64; NUMBER_OF_ES] = [30.0, 10.0, 50.0];
-		pub const ENEMY_HEALTH_SCALE: [f64; NUMBER_OF_ES] = [10.0, 5.0, 20.0];
+		pub const ENEMY_HEALTH: [f64; NUMBER_OF_ES] = [30.0, 10.0, 60.0];
+		pub const ENEMY_HEALTH_SCALE: [f64; NUMBER_OF_ES] = [30.0, 20.0, 50.0];
 		
 		//Sprite constants	
 		

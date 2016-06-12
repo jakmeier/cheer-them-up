@@ -1,0 +1,9 @@
+General settings
+Screen width: [#001][2880]
+Screen height: [#002][1770]
+Font size factor: [#003][3.5]
+
+To change the UI more specifically, use the settings below:
+Battlefield UI size factor : [#004][2.0]
+Text font size: [#005][20]
+Title font size: [#006][60]

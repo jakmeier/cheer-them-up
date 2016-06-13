@@ -1,9 +1,12 @@
+
+
 use utils::ClickableRectangle;
 use utils::JkmButton;
 use utils::JkmStyle;
 
 use constants::*;
 use definitions::{DrawRequest, MapUserInteraction, GameState, TowerAttribute};
+use super::tooltips::Tooltips;
 
 use piston_window::*;
 use gfx_device_gl::Resources;
@@ -12,7 +15,7 @@ use gfx_graphics::GfxGraphics;
 
 use rand;
 
-enum ButtonType{
+pub enum ButtonType{
 	Buy, 
 	Sell,
 	Concrete,
@@ -238,10 +241,10 @@ impl Land {
 		
 	}
 	
-	pub fn draw_buttons (&mut self, g: &mut GfxGraphics<Resources, CommandBuffer>, view: math::Matrix2d, sprite_array: &[Texture<Resources>], mouse: [f64;2])
-		-> Option<DrawRequest>
+	pub fn draw_buttons (&mut self, g: &mut GfxGraphics<Resources, CommandBuffer>, view: math::Matrix2d, sprite_array: &[Texture<Resources>], mouse: [f64;2], tooltips: &Tooltips)
+		-> Vec<DrawRequest>
 	{
-		let mut result = None;
+		let mut result = Vec::new();
 		if self.show_buttons {
 			let d = self.w / 3.0;
 			let e = self.h / 3.0;
@@ -399,7 +402,12 @@ impl Land {
 				
 				if let Some(p) = price {
 					if hover {	
-						result = Some(DrawRequest::ResourcePrice{price: p, coordinates: view.trans(x, y + (3.0*e)), font_size:font_size as u32});
+						result.push(DrawRequest::ResourcePrice{price: p, coordinates: view.trans(x, y + (3.0*e)), font_size:font_size as u32});
+					}
+				}
+				if hover {	
+					if let Some(tooltip) = tooltips.get_tooltip(t) {
+						result.push(DrawRequest::Tooltip{text: tooltip});
 					}
 				}
 			}

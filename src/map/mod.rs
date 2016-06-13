@@ -5,10 +5,14 @@
 //! Manages the map which is one step above the micro. With only the resources one can own in the micro games, the map is fully playable.
 
 mod land;
+mod tooltips;
+
+use std::rc::Rc;
 
 use self::land::Land;
+use self::tooltips::Tooltips;
 use utils::ClickableRectangle;
-use definitions::{MapUserInteraction, DrawRequest, Drawable, GameState};
+use definitions::{MapUserInteraction, DrawRequest, Drawable, GameState, Settings};
 
 use super::piston_window::*;
 use super::gfx_device_gl::Resources;
@@ -24,16 +28,14 @@ const STD_SIZE: f64 = 100.0;
 pub struct Map {
 	cols: usize, rows: usize,
 	pub land_matrix: Vec<Land>,
-//	land_sprites: [Texture<Resources>; LAND_SPRITES_COUNT ],
 	land_sprites: Vec<Texture<Resources>>,
-//	button_sprites: [Texture<Resources>; BUTTON_SPRITES_COUNT ],
 	button_sprites: Vec<Texture<Resources>>,
-//	font: Glyphs,
+	tooltips: Tooltips,
 }
 
 
 impl Map{
-	pub fn new(w: &PistonWindow, cols: usize, rows: usize) -> Map {
+	pub fn new(w: &PistonWindow, cols: usize, rows: usize, config: &Rc<Settings>) -> Map {
 		
 		let mut lands: Vec<Land> = Vec::new();
 		
@@ -111,12 +113,18 @@ impl Map{
 			}
 		}
 		
+		let tooltips = match &config.get_language()[..] {
+			"en" | "EN" | "english" | "English" => Tooltips::new_en(),
+			"de" | "deutsch" | "Deutsch" | "german" | "German" => Tooltips::new_de(),
+			_ => Tooltips::new_en(),
+		};
+		
 		Map{
 			cols: cols, rows: rows,
 			land_matrix: lands,
 			land_sprites: land_sprites,
 			button_sprites: button_sprites,
-			//font: glyphs,
+			tooltips: tooltips,
 		}
 	}
 	
@@ -186,10 +194,9 @@ impl Map{
 	
 }
 
-impl Drawable for Map {
-	#[allow(unused_variables)]
-	fn draw (&mut self, g: &mut GfxGraphics<Resources, CommandBuffer>, view: math::Matrix2d, draw_state: DrawState, w: f64, h:f64, mouse: [f64;2]) -> Option<DrawRequest> {
-		let mut result = None;
+impl Map {
+	pub fn draw (&mut self, g: &mut GfxGraphics<Resources, CommandBuffer>, view: math::Matrix2d, w: f64, h:f64, mouse: [f64;2]) -> Vec<DrawRequest> {
+		let mut result = Vec::new();
 		
 		let width = w / self.cols as f64;
 		let height = h / self.rows as f64;
@@ -214,9 +221,10 @@ impl Drawable for Map {
 		//buttons
 		for i in 0..self.rows {
 			for j in 0..self.cols {
-				if let Some (req) = self.land_matrix[i * self.cols + j].draw_buttons(g, view, &(self.button_sprites), mouse)
-				 { result = Some(req); }
-				
+				let mut draw_request = self.land_matrix[i * self.cols + j].draw_buttons(g, view, &(self.button_sprites), mouse, &self.tooltips);
+				while let Some (req) = draw_request.pop() { 
+					result.push(req);
+				}
 			}
 		}
 		result

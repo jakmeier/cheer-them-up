@@ -1,9 +1,10 @@
 General settings
+Language (Currently available: en, de): [#000][de]
 Screen width: [#001][2880]
 Screen height: [#002][1770]
 Font size factor: [#003][3.5]
 
-To change the UI more specifically, use the settings below:
+To change the UI more specifically, use the advanced settings below:
 Battlefield UI size factor : [#004][2.0]
 Text font size: [#005][20]
 Title font size: [#006][60]

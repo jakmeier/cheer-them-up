@@ -6,7 +6,7 @@
 //! What resources will be rewarded can be set in the constructor.
 
 use super::{AI, ClickableGame};
-use definitions::{Drawable, DrawRequest};
+use definitions::Drawable;
 use super::super::piston_window::*;
 use super::super::gfx_device_gl::Resources;
 use super::super::gfx_device_gl::command::CommandBuffer;
@@ -160,11 +160,9 @@ impl TicTacToeData {
 }
 
 impl Drawable for TicTacToeData {
-	#[allow(unused_variables)] // draw_State
-	fn draw(&mut self, g: &mut GfxGraphics<Resources, CommandBuffer>, view: math::Matrix2d, draw_state: DrawState, w: f64, h:f64, mouse: [f64;2])
-		-> Option<DrawRequest>
+	#[allow(unused_variables)] //draw state
+	fn draw(&mut self, g: &mut GfxGraphics<Resources, CommandBuffer>, view: math::Matrix2d, draw_state: DrawState, w: f64, h:f64)
 	{
-		let result = None;
 		self.w = w;
 		self.h = h;
 		let width = w / 3.0;
@@ -217,8 +215,6 @@ impl Drawable for TicTacToeData {
 		for i in 0..3 {
 			line(color, line_strength, [0.0, i as f64 * height, w, i as f64 * height ], view, g);
 		}
-		
-		result
 	}
 }
 

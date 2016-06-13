@@ -69,7 +69,7 @@ pub struct Game {
 				game_split_coordinates : [screen_width, header_height],
 				eco_def_split_coordinate: screen_width,
 				mouse_x: 0.0, mouse_y: 0.0, 
-				map: map::Map::new(w, 10, 6),
+				map: map::Map::new(w, 10, 6, &config),
 				mini_game: micro::rock_paper_scissors::GameObj::new(w),
 				game_two: micro::tic_tac_toe::TicTacToeData::new(w, [0, 0, 1, 0], [0, 0, 0, 2]),
 				defence: defence::Defence::new(w, STARTING_LIFES, BATTLEFIELD_W, BATTLEFIELD_H, &state, &config),
@@ -177,7 +177,7 @@ pub struct Game {
 		pub fn on_draw(&mut self, ren:RenderArgs, e: PistonWindow){
 			e.draw_2d(|c,g| {
 				clear([1.0, 1.0, 1.0, 1.0], g);				
-				self.cash.draw(g, c.transform, c.draw_state, self.screen_width, self.header_height, [self.mouse_x, self.mouse_y]);
+				self.cash.draw(g, c.transform, c.draw_state, self.screen_width, self.header_height);
 				
 				//defence
 				match self.defence.draw(g, c.transform.trans(self.eco_def_split_coordinate, self.header_height), c.draw_state, (self.screen_width - self.eco_def_split_coordinate), (self.screen_height-self.header_height), [self.mouse_x-self.eco_def_split_coordinate, self.mouse_y-self.header_height], &self.state)
@@ -188,17 +188,25 @@ pub struct Game {
 					_ => {}
 				}
 				
-				self.mini_game.draw(g, c.transform.trans(0.0, self.game_split_coordinates[1]), c.draw_state, self.game_split_coordinates[0], self.screen_height - self.game_split_coordinates[1], [self.mouse_x, self.mouse_y-self.game_split_coordinates[1]]);
-				self.game_two.draw(g, c.transform.trans(self.game_split_coordinates[0], self.game_split_coordinates[1]), c.draw_state, self.eco_def_split_coordinate - self.game_split_coordinates[0], self.screen_height - self.game_split_coordinates[1], [self.mouse_x - self.game_split_coordinates[0], self.mouse_y - self.game_split_coordinates[1]]);
+				self.mini_game.draw(g, c.transform.trans(0.0, self.game_split_coordinates[1]), c.draw_state, self.game_split_coordinates[0], self.screen_height - self.game_split_coordinates[1]);
+				self.game_two.draw(g, c.transform.trans(self.game_split_coordinates[0], self.game_split_coordinates[1]), c.draw_state, self.eco_def_split_coordinate - self.game_split_coordinates[0], self.screen_height - self.game_split_coordinates[1]);
 				
 				//map
-				match self.map.draw(g, c.transform.trans(0.0, self.header_height), c.draw_state, self.eco_def_split_coordinate, self.game_split_coordinates[1]-self.header_height, [self.mouse_x, self.mouse_y-self.header_height])
-				{
-					Some(DrawRequest::ResourcePrice{price, mut coordinates, font_size}) => {
-						if coordinates[0][2] < -1.0 { coordinates[0][2] = -1.0; }
-						self.cash.draw_resource_price(g, coordinates, c.draw_state, price, font_size);
+				let mut draw_requests = self.map.draw(g, c.transform.trans(0.0, self.header_height), self.eco_def_split_coordinate, self.game_split_coordinates[1]-self.header_height, [self.mouse_x, self.mouse_y-self.header_height]);
+				while let Some(dr) = draw_requests.pop() {
+					match dr {
+						DrawRequest::ResourcePrice{price, mut coordinates, font_size} => {
+							if coordinates[0][2] < -1.0 { coordinates[0][2] = -1.0; }
+							self.cash.draw_resource_price(g, coordinates, c.draw_state, price, font_size);
+						}
+						DrawRequest::Tooltip{text} => {
+							let font_size = self.config.get_std_font_size();
+							let y = self.game_split_coordinates[1];
+							rectangle([0.2, 0.2, 0.2, 0.9], [0.0, y, self.screen_width, self.screen_height - y ], c.transform, g);
+							text::Text::new_color([1.0,1.0,1.0,1.0], font_size).draw( &text, &mut self.font, &c.draw_state, c.transform.trans(0.5 * font_size as f64, y + 1.5 * font_size as f64), g);
+						}
+						_ => {}
 					}
-					_ => {}
 				}
 				
 				if self.paused {

@@ -1,7 +1,7 @@
 //! Manages the states and the drawing of a rock-paper-scissors game. Input, turn-timing as well as rewards are not manged in this module, but it offers an API so it can be implemented easily.
 
 use super::{PersistentWinnerState, AbsolutelyChangeableState, AI};
-use definitions::{Drawable, DrawRequest};
+use definitions::Drawable;
 use super::super::piston_window::*;
 use super::super::gfx_device_gl::Resources;
 use super::super::gfx_device_gl::command::CommandBuffer;
@@ -86,8 +86,7 @@ impl GameObj {
 }
 
 impl Drawable for GameObj {
-	#[allow(unused_variables)] //mouse
-	fn draw (&mut self, g: &mut GfxGraphics<Resources, CommandBuffer>, view: math::Matrix2d, draw_state: DrawState, w: f64, h:f64, mouse: [f64;2])  -> Option<DrawRequest> { 
+	fn draw (&mut self, g: &mut GfxGraphics<Resources, CommandBuffer>, view: math::Matrix2d, draw_state: DrawState, w: f64, h:f64)  { 
 		//Background, grey
 		let color = [0.7, 0.7, 0.7, 1.0];
 		rectangle(color, [0.0, 0.0, w, h], view, g);
@@ -176,7 +175,6 @@ impl Drawable for GameObj {
 					&draw_state, 
 					view.trans(x, y), g
 				);
-		None
 	}
 }
 

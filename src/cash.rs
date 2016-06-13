@@ -6,7 +6,6 @@
 //! Can also display the resources as a header bar. 
 //! Additional functionalities: So far only drawing a price on a location on the screen
 
-use definitions::{Drawable,DrawRequest};
 use super::piston_window::*;
 use super::gfx_device_gl::Resources;
 use super::gfx_device_gl::command::CommandBuffer;
@@ -159,9 +158,8 @@ impl CashHeader{
 	}
 }
 
-impl Drawable for CashHeader {
-	#[allow(unused_variables)] //mouse
-	fn draw (&mut self, g: &mut GfxGraphics<Resources, CommandBuffer>, view: math::Matrix2d, draw_state: DrawState, w: f64, h:f64, mouse: [f64;2]) -> Option<DrawRequest> { 
+impl CashHeader {
+	pub fn draw (&mut self, g: &mut GfxGraphics<Resources, CommandBuffer>, view: math::Matrix2d, draw_state: DrawState, w: f64, h:f64) { 
 		//Background, black
 		let color = [0.0, 0.0, 0.0, 1.0];
 		rectangle(color, [0.0, 0.0, w, h], view, g);
@@ -194,6 +192,5 @@ impl Drawable for CashHeader {
 					);
 			x += 0.1 * w;
 		}
-		None
 	}
 }

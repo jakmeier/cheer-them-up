@@ -14,17 +14,18 @@ pub enum DrawRequest{
 	ResourcePrice{price: [u32;4], coordinates: math::Matrix2d, font_size:u32},
 	/// Draws at mouse position.
 	DrawTower{tower_id: usize},
+	/// Draws at the standard location for tooltips
+	Tooltip{text: String},
 }
 
+/// Must be implemened by all mini games
 /// Draws the object within the given area. Scaling is managed internally.
 pub trait Drawable {
 	fn draw(&mut self, g: &mut gfx_graphics::GfxGraphics<gfx_device_gl::Resources, gfx_device_gl::command::CommandBuffer>,
 		view: math::Matrix2d,
 		draw_state: DrawState,
 		w: f64, h:f64,
-		mouse: [f64;2],
 		)
-		-> Option<DrawRequest>
 		;
 }
 
@@ -127,6 +128,7 @@ impl Statistics {
 
 /// Stores values loaded from the config.txt file and makes  them available to the app
 pub struct Settings {
+	language: String,
 	screen_width: u32, screen_height: u32,
 	general_scaling_factor: f64, battlefield_scaling_factor: f64,
 	std_font_size: u32, title_font_size: u32, 
@@ -136,6 +138,7 @@ pub struct Settings {
 impl Settings {
 	/// creates a new Settings object with the standar values:
 	/**
+	* language: english
 	* screen_width: 960,
 	* screen_height: 590,
 	* general_scaling_factor: 1.0, 
@@ -145,6 +148,7 @@ impl Settings {
 	**/
 	pub fn new() -> Settings {
 		Settings {
+			language: String::from("en"),
 			screen_width: 960,
 			screen_height: 590,
 			general_scaling_factor: 1.0, battlefield_scaling_factor: 1.0,
@@ -189,17 +193,20 @@ impl Settings {
 										value.push(c);
 										if let Some(just_c) = buf.next() {c = just_c} else { println!("Configuration file ended unexpectedly."); break; }
 									}
-									let v : f64 = if let Ok(v) = value.parse::<f64>(){v}
-											else if let Ok(v) = value.parse::<u32>(){v as f64}
-											else { println!("File corrupted: No value for key {}.", key); break;};
-									match &key[..] {
-										"001" => result.screen_width = v as u32,
-										"002" => result.screen_height = v as u32,
-										"003" => result.general_scaling_factor = v,
-										"004" => result.battlefield_scaling_factor = v,
-										"005" => result.std_font_size = v as u32,
-										"006" => result.title_font_size = v as u32,
-										_ => println!("Corrupted configuration file, unexpected key: {}. Value was {}. ", key, v)
+									if key == "000" {result.language = value;}
+									else {
+										let v : f64 = if let Ok(v) = value.parse::<f64>(){v}
+												else if let Ok(v) = value.parse::<u32>(){v as f64}
+												else { println!("File corrupted: No valid value for key {}.", key); break;};
+										match &key[..] {
+											"001" => result.screen_width = v as u32,
+											"002" => result.screen_height = v as u32,
+											"003" => result.general_scaling_factor = v,
+											"004" => result.battlefield_scaling_factor = v,
+											"005" => result.std_font_size = v as u32,
+											"006" => result.title_font_size = v as u32,
+											_ => println!("Corrupted configuration file, unexpected key: {}. Value was {}. ", key, v)
+										}
 									}
 									key = "".to_string();
 									value = "".to_string();
@@ -250,5 +257,13 @@ impl Settings {
 	}	
 	pub fn get_title_font_size(&self) -> u32 {
 		(self.title_font_size as f64 * self.general_scaling_factor) as u32
+	}
+	
+	pub fn get_language(&self) -> String {
+		self.language.clone()
+	}
+	
+	pub fn set_language(&mut self, s: String) {
+		self.language = s;
 	}
 }

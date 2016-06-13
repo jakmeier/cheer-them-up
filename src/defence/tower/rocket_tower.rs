@@ -25,6 +25,7 @@ impl RocketTower {
 					reload_time: TOWER_BASE_ATTACK_RATIO_LIST[ROCKET_TID],
 					cooldown: 0.0, 
 					attack_power: TOWER_BASE_ATTACK_LIST[ROCKET_TID],
+					show_delete_button: false,
 				},
 				range: TOWER_BASE_RANGE_LIST[ROCKET_TID],
 				explosion_radius: EXPLOSION_BASE_RADIUS,

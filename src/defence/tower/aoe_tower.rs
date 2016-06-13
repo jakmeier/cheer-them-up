@@ -30,6 +30,7 @@ impl AoeTower {
 					reload_time: TOWER_BASE_ATTACK_RATIO_LIST[AOE_TID],
 					cooldown: 0.0,
 					attack_power: TOWER_BASE_ATTACK_LIST[AOE_TID],
+					show_delete_button: false,
 				},
 				range: TOWER_BASE_RANGE_LIST[AOE_TID],
 		}

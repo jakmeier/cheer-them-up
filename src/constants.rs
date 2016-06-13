@@ -11,21 +11,21 @@
 pub const HEALTH_BAR_HEIGHT: f64 = 8.0;
 
 //Meta
-pub const START_RESSOURCES: [u32;4] = [0,0,0,0];
+/*pub const START_RESSOURCES: [u32;4] = [0,0,0,0];
 pub const STARTING_LIFES: u32 = 50;
 
 pub const START_TIME_PHASE_2: f64 = 15.0;
 pub const START_TIME_PHASE_3: f64 = 30.0;
 pub const START_TIME_PHASE_4: f64 = 120.0;
-pub const PHASE_SWITCH_TIME: f64 = 2.0;
+pub const PHASE_SWITCH_TIME: f64 = 2.0;*/
 
-/*
+/**/
 pub const START_RESSOURCES: [u32;4] = [500,500,500,500];
 pub const STARTING_LIFES: u32 = 30;
 pub const START_TIME_PHASE_2: f64 = 5.0;
 pub const START_TIME_PHASE_3: f64 = 10.0;
 pub const START_TIME_PHASE_4: f64 = 15.0;
-pub const PHASE_SWITCH_TIME: f64 = 1.0;*/
+pub const PHASE_SWITCH_TIME: f64 = 1.0;/**/
 
 pub const EPS: f64 = 1.0/1048576.0;
 
@@ -110,7 +110,7 @@ pub const ORACLE_RESEARCH_PRICE_LIST: [[u32;4]; ORACLE_RESEARCH_LEVELS] =
 	pub const BF_SHOP_SPLIT_RATIO: f64 = 0.875;
 	
 	// General Sprites
-	pub const GENERAL_BATTLEFIELD_SPRITE_LIST: [&'static str; 2] = ["highway_from_hell.png", "cross.png"];
+	pub const GENERAL_BATTLEFIELD_SPRITE_LIST: [&'static str; 4] = ["highway_from_hell.png", "cross.png", "delete.png", "explosion.png"];
 	
 	// Enemy
 

@@ -26,6 +26,7 @@ impl Wall {
 					reload_time: TOWER_BASE_ATTACK_RATIO_LIST[WALL_TID],
 					cooldown: 0.0,
 					attack_power: TOWER_BASE_ATTACK_LIST[WALL_TID],
+					show_delete_button: false,
 				},
 		}
 	}

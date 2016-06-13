@@ -112,11 +112,16 @@ impl Ctrl {
 				}
 			},
 			19 => {
-				if !self.fast_enemies(vec, 10, 20.0, 1.0){ 
+				if !self.fast_enemies(vec, 6, 20.0, 1.0){ 
 						self.state = START_SHORT_BREAK ;
 				}
 			},
 			20 => {
+				if !self.basic_enemies(vec, 10, 20.0, 3.0){ 
+						self.state = START_NORMAL_BREAK ;
+				}
+			},
+			21 => {
 				if !self.fast_enemies(vec, 10, 20.0, 2.0){ 
 						self.state = START_NORMAL_BREAK ;
 						self.loop_counter = 2;
@@ -124,24 +129,24 @@ impl Ctrl {
 			},
 			
 			// End loop, spwaning the same waves over and over again with increasing strength
-			21 => {
+			22 => {
 				let level = self.loop_counter as f64;
 				if !self.basic_enemies(vec, 15, 20.0, level){ 
 						self.state = START_SHORT_BREAK ;
 				}
 			},
-			22 => {
+			23 => {
 				let level = self.loop_counter as f64;
 				if !self.slow_enemies(vec, 15, 20.0, level){ 
 						self.state = START_SHORT_BREAK ;
 				}
 			},
-			23 => {
+			24 => {
 				let level = self.loop_counter as f64;
 				if !self.fast_enemies(vec, 15, 15.0, level){ 
 						self.state = START_SHORT_BREAK ;
 						self.loop_counter += 1;
-						self.highest_state = 20; // going to 21 after the break
+						self.highest_state = 21; // going to 22 after the break
 				}
 			},
 			

@@ -26,6 +26,7 @@ pub struct TowerAttributes {
 	max_health: f64, health: f64,
 	reload_time: f64, cooldown: f64, 
 	attack_power: f64,
+	show_delete_button: bool,
 }
 
 pub trait Tower{
@@ -46,7 +47,7 @@ pub trait Tower{
 		else { self.get_mut().health= hp; }
 	}
 	
-	fn draw(&self, g: &mut GfxGraphics<Resources, CommandBuffer>, view: math::Matrix2d, mouse:[f64;2], dx: f64, dy: f64, sprite_array: &[Texture<Resources>], upgrades: &GameState) {
+	fn draw(&self, g: &mut GfxGraphics<Resources, CommandBuffer>, view: math::Matrix2d, mouse:[f64;2], dx: f64, dy: f64, sprite_array: &[Texture<Resources>], general_sprite_array: &[Texture<Resources>], upgrades: &GameState) {
 		let (w, h) = self.get_tower_size();
 		let (sprite_w, sprite_h) = sprite_array[self.get_tower_type_id()].get_size();
 		let x_scale = w*dx/(sprite_w as f64);
@@ -58,6 +59,14 @@ pub trait Tower{
 		if mouse[0]/dx > x && mouse[0]/dx < x+w && mouse[1]/dy > y && mouse[1]/dy < y+h {
 			let hp_ratio = self.get().health / self.get().max_health;
 			rectangle([0.0, 0.8, 0.0, 1.0], [0.0, -HEALTH_BAR_HEIGHT, w*dx*hp_ratio, HEALTH_BAR_HEIGHT], view.trans(x*dx,y*dy), g );
+		}
+		//Display delete button
+		if self.get().show_delete_button {
+			let del_button = &general_sprite_array[2];
+			let (sprite_w, sprite_h) = del_button.get_size();
+			let s = if w*dx < h*dy { w } else { h };
+			let scale = if w*dx < h*dy { w/sprite_w as f64 * dx } else { h / sprite_h as f64 * dy };
+			image(del_button, view.trans((x-s)*dx,y*dy).scale(scale, scale), g);
 		}
 	}
 	#[allow(unused_variables)]
@@ -86,5 +95,22 @@ pub trait Tower{
 		let bonus_hp = max_hp_after - self.get().max_health;
 		self.get_mut().max_health = max_hp_after;
 		self.get_mut().health += bonus_hp;
+	}
+	
+	fn on_click(&mut self, mouse: [f64;2], scale: [f64;2]) {
+		
+		let (x,y) = self.get_coordinates();
+		let x = x*scale[0];
+		let y = y*scale[1];
+		let (w, h) = self.get_tower_size();
+		//println!("mouse:({}|{}) tower:({}|{})({}|{})", mouse[0], mouse[1], x, y, w, h);
+		let s = if w*scale[0] < h*scale[1] { w*scale[0] } else { h*scale[1] };
+		if self.get().show_delete_button && (mouse[0] > x-s && mouse[0] < x && mouse[1] > y && mouse[1] < y+s) {
+			self.get_mut().health = 0.0;
+		}
+		else if mouse[0] > x && mouse[0] < x+w*scale[0] && mouse[1] > y && mouse[1] < y+h*scale[1] {
+			self.get_mut().show_delete_button = !self.get().show_delete_button;
+		}
+		else { self.get_mut().show_delete_button = false; }
 	}
 }

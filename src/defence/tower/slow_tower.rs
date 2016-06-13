@@ -24,6 +24,7 @@ impl SlowTower {
 					reload_time: TOWER_BASE_ATTACK_RATIO_LIST[SLOW_TID],
 					cooldown: 0.0, 
 					attack_power: TOWER_BASE_ATTACK_LIST[SLOW_TID],
+					show_delete_button: false,
 				},
 				range: TOWER_BASE_RANGE_LIST[SLOW_TID],
 		}

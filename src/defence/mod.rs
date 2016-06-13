@@ -232,6 +232,9 @@ impl Defence {
 			}
 		
 		}
+		for t in self.towers.iter_mut() {
+			t.on_click([x,y], [self.dx,self.dy]);
+		}
 		None
 	}
 	fn on_battlefield(&self, x: f64, y:f64, w: f64, h: f64) -> bool {x > 0.0 && x < (self.width - w) && y > 0.0 && y < (self.height - h)* BF_SHOP_SPLIT_RATIO}
@@ -274,7 +277,7 @@ impl Defence {
 		
 		// towers
 		for t in self.towers.iter() {
-			t.draw(g, view, mouse, dx, dy, &self.tower_sprites, &state);
+			t.draw(g, view, mouse, dx, dy, &self.tower_sprites, &self.general_sprites, &state);
 		}
 		
 		
@@ -291,7 +294,11 @@ impl Defence {
 		
 		// explosions
 		for &((x,y,r),_) in self.explosions.iter() {
-			ellipse([0.5,0.1,0.1,0.5], [x-r, y-r, 2.0*r , 2.0*r], view.scale(dx,dy), g );
+			let explosion = &self.general_sprites[3];
+			let (sprite_w, sprite_h) = explosion.get_size();
+			let x_scale = 2.0 * r * dx /(sprite_w as f64);
+			let y_scale = 2.0 * r * dy /(sprite_h as f64);
+			image(explosion, view.trans((x-r) * dx,(y-r) * dy).scale(x_scale, y_scale), g);
 		}
 		
 		// Life display
@@ -301,7 +308,7 @@ impl Defence {
 		let draw_req = self.shop.draw(g, view.trans(0.0, battlefield_h), w, h - battlefield_h, [mouse[0], mouse[1] - battlefield_h], &self.tower_sprites, dx, dy, state);
 		match draw_req{
 			Some(DrawRequest::DrawTower{tower_id}) => {
-				self.tower_templates[tower_id].draw(g, view.trans(mouse[0],mouse[1]), [mouse[0] - 10.0, mouse[1]-10.0], dx, dy, &self.tower_sprites, &state);
+				self.tower_templates[tower_id].draw(g, view.trans(mouse[0],mouse[1]), [mouse[0] - 10.0, mouse[1]-10.0], dx, dy, &self.tower_sprites, &self.general_sprites, &state);
 				let (w,h) = self.tower_templates[tower_id].get_tower_size();
 				let x = mouse[0] / self.dx;
 				let y = mouse[1] / self.dy;

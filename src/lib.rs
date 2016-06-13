@@ -194,7 +194,8 @@ pub struct Game {
 				//map
 				match self.map.draw(g, c.transform.trans(0.0, self.header_height), c.draw_state, self.eco_def_split_coordinate, self.game_split_coordinates[1]-self.header_height, [self.mouse_x, self.mouse_y-self.header_height])
 				{
-					Some(DrawRequest::ResourcePrice{price, coordinates, font_size}) => {
+					Some(DrawRequest::ResourcePrice{price, mut coordinates, font_size}) => {
+						if coordinates[0][2] < -1.0 { coordinates[0][2] = -1.0; }
 						self.cash.draw_resource_price(g, coordinates, c.draw_state, price, font_size);
 					}
 					_ => {}

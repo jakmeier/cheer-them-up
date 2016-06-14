@@ -208,7 +208,7 @@ impl Defence {
 			}
 			else if e.is_dead() { 
 				to_remove.push(i); 
-				stats.add_unit_kill();
+				stats.add_unit_kill( e.score_value() );
 			}
 		}
 		while let Some(i) = to_remove.pop() {

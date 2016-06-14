@@ -393,10 +393,11 @@ impl Land {
 						price = Some(tower_upgrade_cost(level));
 					}
 				}
-				if let Some(i) = sprite_index {
+				
+				if let Some(i) = second_sprite_index {
 					(*b).draw(g, view, &(sprite_array[i]), x, y, 2.0 * d, 2.0 * e);
 				}
-				if let Some(i) = second_sprite_index {
+				if let Some(i) = sprite_index {
 					(*b).draw(g, view, &(sprite_array[i]), x, y, 2.0 * d, 2.0 * e);
 				}
 				

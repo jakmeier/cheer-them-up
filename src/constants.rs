@@ -62,18 +62,18 @@ pub const BLACKSMITH_II_PRICE: [u32;4] = [0,5,8,0];
 pub const BARRACKS_PRICE: [u32;4] = [0,5,5,0];
 pub const ARCHERY_RANGE_PRICE: [u32;4] = [0,8,5,0];
 
-pub const BANK_PRICE: [u32;4] = [5,5,0,0];
+pub const BANK_PRICE: [u32;4] = [3,5,0,0];
 pub const BANK_UPGRADES: usize = 5;
 pub const BANK_UPGRADE_PRICE: [[u32;4]; BANK_UPGRADES] = 
 	[
 		[5,0,0,5],
-		[10,0,0,5],
-		[15,0,0,10],
-		[25,0,0,10],
-		[35,0,0,20],
+		[0,5,0,5],
+		[0,0,5,5],
+		[0,5,5,10],
+		[0,5,5,15],
 	];
 
-pub const ORACLE_PRICE: [u32;4] = [0,0,0,3];
+pub const ORACLE_PRICE: [u32;4] = [0,0,2,2];
 	
 // UPGRADES / RESEARCHES
 pub const INDUSTRIALISATION_PRICE: [u32;4] = [0,0,10,0];
@@ -116,26 +116,27 @@ pub const ORACLE_RESEARCH_PRICE_LIST: [[u32;4]; ORACLE_RESEARCH_LEVELS] =
 	// Enemy
 
 		//ids
-		pub const NUMBER_OF_ES: usize = 3;
+		pub const NUMBER_OF_ES: usize = 5;
 		pub const BASIC_EID: usize = 0;
 		pub const SLOW_EID: usize = 1;
 		pub const FAST_EID: usize = 2;
+		pub const AGGRO_EID: usize = 3;
+		pub const BOSS_EID: usize = 4;
 		
 		// Speed list
-		pub const ENEMY_SPEED: [f64; 3] = [25.0, 70.0, 110.0 ];
+		pub const ENEMY_SPEED: [f64; 3] = [25.0, 60.0, 100.0];
 		
 		// Stats for each enemy type
-		pub const ENEMY_ATTACK: [f64; NUMBER_OF_ES] = [7.0, 5.0, 10.0];
-		pub const ENEMY_ATTACK_SCALE: [f64; NUMBER_OF_ES] = [2.0, 1.0, 3.0];
-		pub const ENEMY_ATTACK_RATIO: [f64; NUMBER_OF_ES] = [0.5, 0.3, 0.7];
+		pub const ENEMY_ATTACK: [f64; NUMBER_OF_ES] = [7.0, 10.0, 3.0, 10.0, 75.0];
+		pub const ENEMY_ATTACK_SCALE: [f64; NUMBER_OF_ES] = [2.0, 3.0, 1.0, 2.5, 25.0];
+		pub const ENEMY_ATTACK_RATIO: [f64; NUMBER_OF_ES] = [0.5, 1.0, 0.4, 0.5, 0.6];
 		
-		pub const ENEMY_HEALTH: [f64; NUMBER_OF_ES] = [30.0, 10.0, 60.0];
-		pub const ENEMY_HEALTH_SCALE: [f64; NUMBER_OF_ES] = [30.0, 20.0, 50.0];
+		pub const ENEMY_HEALTH: [f64; NUMBER_OF_ES] = [30.0, 60.0, 10.0, 50.0, 1000.0];
+		pub const ENEMY_HEALTH_SCALE: [f64; NUMBER_OF_ES] = [30.0, 45.0, 20.0, 50.0, 600.0];
 		
 		//Sprite constants	
 		
-		pub const ENEMY_SPRITE_LIST: [&'static str; NUMBER_OF_ES] = ["enemy_i.png", "enemy_ii.png", "enemy_iii.png"];
-		
+		pub const ENEMY_SPRITE_LIST: [&'static str; NUMBER_OF_ES] = ["enemy_i.png", "enemy_ii.png", "enemy_iii.png", "enemy_iv.png", "boss.png"];
 		
 		//size
 		pub const STD_ENEMY_W: f64 = 50.0;

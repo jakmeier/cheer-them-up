@@ -19,6 +19,8 @@ use constants::*;
 pub mod basic_enemy;
 pub mod slow_enemy;
 pub mod fast_enemy;
+pub mod aggressive_enemy;
+pub mod boss_enemy;
 
 pub struct EnemyAttributes {
 	x: f64, y: f64,
@@ -284,7 +286,7 @@ pub trait Enemy {
 					let (x,y) = t.get_coordinates();
 					let (w,h) = t.get_tower_size();
 					if x <= destination_x && x + w >= enemy_x //horizontally between enemy and destination
-						&& y <= destination_y + enemy_h  && y + h >= destination_y //vertically blocking destination
+						&& y <= destination_y + enemy_h  && y + h + enemy_h >= destination_y //vertically blocking destination
 						&& (x-enemy_x-enemy_w).abs() < new_target.0
 						{ new_target = ((x-enemy_x-enemy_w).abs(), i); }
 				}
@@ -295,25 +297,26 @@ pub trait Enemy {
 					let (x,y) = t.get_coordinates();
 					let (w,h) = t.get_tower_size();
 					if x + w >= destination_x && x <= enemy_x + enemy_w //horizontally between enemy and destination
-						&& y <= destination_y + enemy_h  && y + h >= destination_y //vertically blocking destination
+						&& y <= destination_y + enemy_h  && y + h + enemy_h >= destination_y //vertically blocking destination
 						&& (enemy_x - x -w).abs() < new_target.0
 						{ new_target = ((enemy_x-x-w).abs(), i); }
 				}
 			}
 
 		}
-		debug_assert!(new_target.0 < std::f64::INFINITY );
-		self.get_mut().attack_target = Some(new_target.1);
+		if new_target.0 < std::f64::INFINITY {
+			self.get_mut().attack_target = Some(new_target.1);
+		}
 	}
 	
 	// recompute the shortest path and attack target for the enemy 
 	fn refresh_destination(&mut self, spm: &JkmShortestPathMap) {
-	if self.get().berserker_mode {
-		self.get_mut().berserker_mode = false;
-		self.get_mut().attack_target = None;
-	}
-	if !self.get().base_reached {
-		let (x, y) = self.get_coordinates();
+		if self.get().berserker_mode {
+			self.get_mut().berserker_mode = false;
+			self.get_mut().attack_target = None;
+		}
+		if !self.get().base_reached {
+			let (x, y) = self.get_coordinates();
 			if self.get().destination_reached {
 				if let Some(d) = spm.next_checkpoint(x, y) {
 					let (old_x, old_y) = self.get().destination;
@@ -322,7 +325,7 @@ pub trait Enemy {
 					if new_x == old_x && new_y == old_y { self.get_mut().base_reached = true; }
 					else { self.get_mut().destination_reached = false; }
 				}
-				 else {self.get_mut().berserker_mode = true;}
+				else {self.get_mut().berserker_mode = true;}
 			}
 			else
 			{
@@ -334,4 +337,5 @@ pub trait Enemy {
 		}
 	}
 	
+	fn score_value(&self) -> u32 { 1 }
 }

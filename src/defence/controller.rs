@@ -4,6 +4,8 @@ use super::enemy::Enemy;
 use super::enemy::basic_enemy::BasicEnemy;
 use super::enemy::slow_enemy::SlowEnemy;
 use super::enemy::fast_enemy::FastEnemy;
+use super::enemy::aggressive_enemy::AggressiveEnemy;
+use super::enemy::boss_enemy::Boss;
 
 pub struct Ctrl {
 	spawn_x: f64, spawn_y: f64,
@@ -124,30 +126,58 @@ impl Ctrl {
 			21 => {
 				if !self.fast_enemies(vec, 10, 20.0, 2.0){ 
 						self.state = START_NORMAL_BREAK ;
-						self.loop_counter = 2;
 				}
 			},
-			
-			// End loop, spwaning the same waves over and over again with increasing strength
 			22 => {
-				let level = self.loop_counter as f64;
-				if !self.basic_enemies(vec, 15, 20.0, level){ 
+				if !self.aggressive_enemies(vec, 5, 10.0, 0.0){ 
 						self.state = START_SHORT_BREAK ;
 				}
 			},
 			23 => {
-				let level = self.loop_counter as f64;
-				if !self.slow_enemies(vec, 15, 20.0, level){ 
-						self.state = START_SHORT_BREAK ;
+				if !self.slow_enemies(vec, 15, 20.0, 2.0){ 
+						self.state = START_LONG_BREAK ;
 				}
 			},
 			24 => {
-				let level = self.loop_counter as f64;
-				if !self.fast_enemies(vec, 15, 15.0, level){ 
+				self.boss(vec, 0.0);
+				self.state = START_NORMAL_BREAK ;
+			},
+			
+			// End loop, spwaning the same waves over and over again with increasing strength
+			25 => {
+				let level = (self.loop_counter + 2) as f64;
+				let number = 15 + 2 * self.loop_counter;
+				if !self.basic_enemies(vec, number, 20.0, level){ 
 						self.state = START_SHORT_BREAK ;
-						self.loop_counter += 1;
-						self.highest_state = 21; // going to 22 after the break
 				}
+			},
+			26 => {
+				let level = (self.loop_counter + 2) as f64;
+				let number = 15 + 2 * self.loop_counter;
+				if !self.slow_enemies(vec, number, 20.0, level){ 
+						self.state = START_SHORT_BREAK ;
+				}
+			},
+			27 => {
+				let level = (self.loop_counter + 2) as f64;
+				let number = 15 + 2 * self.loop_counter;
+				if !self.fast_enemies(vec, number, 15.0, level){ 
+						self.state = START_SHORT_BREAK ;
+				}
+			},
+			28 => {
+				let level = self.loop_counter as f64;
+				let number = 15 + 2 * self.loop_counter;
+				if !self.aggressive_enemies(vec, number, 15.0, level){ 
+						self.state = START_NORMAL_BREAK ;	
+				}
+			},
+			29 => {
+				let level = self.loop_counter as f64;
+				self.boss(vec, level);
+				self.state = START_SHORT_BREAK ;
+				self.loop_counter += 1;
+				self.highest_state = 24; // going to 25 after the break
 			},
 			
 			
@@ -191,6 +221,23 @@ impl Ctrl {
 		}
 		true
 	}
+	
+	fn aggressive_enemies(&mut self, vec: &mut Vec<Box<Enemy>>, n: u32, t: f64, level: f64) -> bool {
+		if n <= self.unit_counter { return false }
+		if self.clock >= t / n as f64 {
+			self.clock = 0.0;
+			let new_enemy = Box::new(AggressiveEnemy::new( self.spawn_x, self.spawn_y, level) );
+			vec.push(new_enemy);
+			self.unit_counter += 1;
+		}
+		true
+	}
+	
+	fn boss(&mut self, vec: &mut Vec<Box<Enemy>>, level: f64) {
+		let new_enemy = Box::new(Boss::new( self.spawn_x, self.spawn_y, level) );
+		vec.push(new_enemy);
+	}
+	
 }
 
 // Constantsv for this module

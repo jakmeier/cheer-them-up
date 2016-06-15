@@ -18,12 +18,12 @@ impl AggressiveEnemy {
 		let hp = ENEMY_HEALTH[AGGRO_EID] + ENEMY_HEALTH_SCALE[AGGRO_EID] * scale;
 		let ap = ENEMY_ATTACK[AGGRO_EID] + ENEMY_ATTACK_SCALE[AGGRO_EID] * scale;
 		let attr = EnemyAttributes {
-			x: x-(STD_ENEMY_W/2.0), y: 0.0,
+			x: x-(STD_ENEMY_W/2.0), y: y,
 			w:STD_ENEMY_W, h:STD_ENEMY_H ,
 			speed: 1,
 			health: hp, max_health: hp,
 			attack: ap, attack_ratio: ENEMY_ATTACK_RATIO[AGGRO_EID], attack_reload: 0.0,
-			destination: (x,y),
+			destination: (x-(STD_ENEMY_W/2.0),y),
 			destination_reached: false,
 			base_reached: false,
 			berserker_mode: false, attack_target: None,
@@ -42,7 +42,8 @@ impl Enemy for AggressiveEnemy {
 	fn get(&self) -> &EnemyAttributes { &self.attributes }
 	fn get_mut(&mut self) -> &mut EnemyAttributes { &mut self.attributes }
 	
-	// Overwrite
+	// OVERWRITE 	OVERWRITE 	OVERWRITE	OVERWRITE
+	
 	/// Usually returns true when the enemy reached the base, false otherwise
 	/// For this enemy, always return false, it does not even try to get to the base
 	#[allow(unused_variables)] //spm
@@ -64,5 +65,10 @@ impl Enemy for AggressiveEnemy {
 			if new_target.0 < std::f64::INFINITY {self.get_mut().attack_target = Some(new_target.1);}
 		}	
 		false
+	}
+	
+	#[allow(unused_variables)] //spm
+	fn refresh_destination(&mut self, spm: &JkmShortestPathMap) {
+		self.get_mut().attack_target = None;
 	}
 }

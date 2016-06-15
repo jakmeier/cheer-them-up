@@ -55,7 +55,7 @@ pub struct Defence {
 impl Defence {
 	/// width and height are not related to the actual drawn size, they only define the size of the battle field, i.e. how many objects can fit on it.
 	pub fn new (w: &PistonWindow, hp: u32, width: f64, height: f64, state: &GameState, config: &Rc<Settings>) -> Defence {
-		let controller = controller::Ctrl::new(width/2.0, 0.0);
+		let controller = controller::Ctrl::new((width - STD_ENEMY_W)/2.0, 0.0);
 		
 		let bf_height = height * BF_SHOP_SPLIT_RATIO;
 		let mut spm = JkmShortestPathMap::new( (width / 2.0, 0.0), (width / 2.0 , bf_height - STD_ENEMY_H ),(0.0, 0.0, width - STD_ENEMY_W, bf_height- STD_ENEMY_H) );
@@ -341,7 +341,7 @@ impl Defence {
 			_ => panic!("Unexpected tower ID: {}", tower_id),
 		};
 		let (w,h) = new_tower.get_tower_size();
-		// TODO: replace constants with some correct value!
+		// TODO (if different sized enemies exist): replace constants with some correct value!
 		self.shortest_path_map.insert_obstacle(x-STD_ENEMY_W, y-STD_ENEMY_H, w+STD_ENEMY_W, h+STD_ENEMY_H );
 		self.towers.push(new_tower);
 		

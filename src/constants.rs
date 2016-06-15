@@ -26,8 +26,8 @@ pub const STARTING_LIFES: u32 = 30;
 pub const START_TIME_PHASE_2: f64 = 5.0;
 pub const START_TIME_PHASE_3: f64 = 10.0;
 pub const START_TIME_PHASE_4: f64 = 15.0;
-pub const PHASE_SWITCH_TIME: f64 = 1.0;*/
-
+pub const PHASE_SWITCH_TIME: f64 = 1.0;/**/
+*/
 pub const EPS: f64 = 1.0/1048576.0;
 
 // Map
@@ -157,8 +157,8 @@ pub const ORACLE_RESEARCH_PRICE_LIST: [[u32;4]; ORACLE_RESEARCH_LEVELS] =
 				[2,0,2,0],
 				[0,4,0,0],
 				[0,0,5,0],
-				[5,0,5,1],
-				[5,5,10,4],
+				[5,0,5,0],
+				[0,15,0,5],
 			];
 		pub const TOWER_SIZE_LIST: [(f64,f64);NUMBER_OF_TOWERS] = [(70.0,100.0),(75.0,100.0),(75.0,50.0), (55.0, 80.0), (100.0,140.0) ];
 		pub const TOWER_BASE_HEALTH_LIST: [f64;NUMBER_OF_TOWERS] = [60.0, 100.0, 200.0, 100.0, 150.0];

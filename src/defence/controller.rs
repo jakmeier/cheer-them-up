@@ -241,10 +241,10 @@ impl Ctrl {
 }
 
 // Constantsv for this module
-const INITIAL_PEACE_TIME: f64 = 30.0;
+/**/const INITIAL_PEACE_TIME: f64 = 30.0;
 const LONG_BREAK_BETWEEN_WAVES: f64 = 60.0;
 const NORMAL_BREAK_BETWEEN_WAVES: f64 = 30.0;
-const SHORT_BREAK_BETWEEN_WAVES: f64 = 15.0;
+const SHORT_BREAK_BETWEEN_WAVES: f64 = 15.0;/**/
  /*Debugging:*//*
 const INITIAL_PEACE_TIME: f64 = 3.0;
 const LONG_BREAK_BETWEEN_WAVES: f64 = 6.0;

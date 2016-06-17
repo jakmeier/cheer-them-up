@@ -14,3 +14,4 @@ To change the UI more specifically, use the advanced settings below:
 Battlefield UI size factor : [#004][1.0]
 Text font size: [#005][20]
 Title font size: [#006][60]
+Lifes display font size: [#007][30]

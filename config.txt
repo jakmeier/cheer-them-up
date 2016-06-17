@@ -8,7 +8,6 @@ General settings:
 Language (Currently available: en, de): [#000][en]
 Screen width: [#001][1440]
 Screen height: [#002][885]
-Fullscreen (0=no, 1=yes): [#008][0]
 Font size factor: [#003][1.5]
 
 To change the UI more specifically, use the advanced settings below:

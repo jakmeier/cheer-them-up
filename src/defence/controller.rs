@@ -173,7 +173,7 @@ impl Ctrl {
 			},
 			28 => {
 				let level = self.loop_counter as f64;
-				let number = 15 + 2 * self.loop_counter;
+				let number = 10 + self.loop_counter;
 				if !self.aggressive_enemies(vec, number, 15.0, level){ 
 						self.state = START_NORMAL_BREAK ;	
 				}
@@ -213,7 +213,7 @@ impl Ctrl {
 			// ghosts
 			33 => {
 				let level = (self.loop_counter - 3) as f64;
-				let number = 8 + 2 * self.loop_counter;
+				let number = 15 + 2 * self.loop_counter;
 				if !self.ghosts(vec, number, 20.0, level){ 
 						self.state = START_SHORT_BREAK ;	
 				}
@@ -226,7 +226,7 @@ impl Ctrl {
 			},
 			35 => {
 				let level = (self.loop_counter - 4) as f64;
-				let number = 5 + self.loop_counter;
+				let number = 8 + self.loop_counter;
 				let time = if self.loop_counter < 15 { 5.0 + (self.loop_counter - 4) as f64} else { 15.0 };
 				if !self.ghost_gang(vec, number, time, level) {
 					self.state = START_SHORT_BREAK ;
@@ -249,7 +249,7 @@ impl Ctrl {
 			},
 			38 => {
 				let level = (self.loop_counter - 6) as f64;
-				let number = 8 + 2 * self.loop_counter;
+				let number = 8 + self.loop_counter;
 				if !self.troll_and_aggressive_enemies(vec, number, 20.0, level){ 
 						self.state = START_SHORT_BREAK ;	
 						if self.loop_counter == 7 {self.loop_counter += 1; self.highest_state = 24;} // going to 25 after the break

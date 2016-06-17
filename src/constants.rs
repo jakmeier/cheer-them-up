@@ -52,12 +52,12 @@ pub const BLACKSMITH_II_PRICE: [u32;4] = [0,5,8,0];
 pub const BARRACKS_PRICE: [u32;4] = [0,5,5,0];
 pub const ARCHERY_RANGE_PRICE: [u32;4] = [0,8,5,0];
 
-pub const BANK_PRICE: [u32;4] = [3,5,0,0];
+pub const BANK_PRICE: [u32;4] = [5,5,0,0];
 pub const BANK_UPGRADES: usize = 5;
 pub const BANK_UPGRADE_PRICE: [[u32;4]; BANK_UPGRADES] = 
 	[
-		[5,0,0,5],
-		[0,5,0,5],
+		[0,0,0,3],
+		[0,5,0,3],
 		[0,0,5,5],
 		[0,5,5,10],
 		[0,5,5,15],
@@ -123,8 +123,8 @@ pub const ORACLE_RESEARCH_PRICE_LIST: [[u32;4]; ORACLE_RESEARCH_LEVELS] =
 		pub const ENEMY_ATTACK_SCALE: [f64; NUMBER_OF_ES] = [2.0,  3.0, 1.0,  2.5, 25.0,  2.0, 25.0, 0.0, 0.0,  50.0];
 		pub const ENEMY_ATTACK_RATIO: [f64; NUMBER_OF_ES] = [0.5,  1.0, 0.4,  0.5,  0.7,  0.8,  1.0, 1.0, 1.0,   2.0];
 		
-		pub const ENEMY_HEALTH: [f64; NUMBER_OF_ES] = 		[30.0, 60.0, 10.0, 50.0, 1000.0, 100.0, 1000.0, 100.0, 500.0, 1000.0];
-		pub const ENEMY_HEALTH_SCALE: [f64; NUMBER_OF_ES] = [30.0, 45.0, 20.0, 50.0,  400.0,  25.0,  300.0, 20.0, 150.0, 500.0];
+		pub const ENEMY_HEALTH: [f64; NUMBER_OF_ES] = 		[30.0, 60.0, 10.0, 50.0, 1000.0, 100.0, 1000.0, 100.0, 1000.0, 3000.0];
+		pub const ENEMY_HEALTH_SCALE: [f64; NUMBER_OF_ES] = [30.0, 45.0, 20.0, 50.0,  400.0,  25.0,  300.0, 20.0, 200.0, 500.0];
 		
 		//Sprite constants	
 		

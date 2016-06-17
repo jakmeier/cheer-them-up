@@ -143,10 +143,10 @@ impl Statistics {
 /// Stores values loaded from the config.txt file and makes  them available to the app
 pub struct Settings {
 	name: String,
-	language: String,
+	language: Language,
 	screen_width: u32, screen_height: u32,
 	general_scaling_factor: f64, battlefield_scaling_factor: f64,
-	std_font_size: u32, title_font_size: u32, 
+	std_font_size: u32, title_font_size: u32, health_font_size: u32,
 }
 
 // constructors
@@ -164,11 +164,11 @@ impl Settings {
 	pub fn new() -> Settings {
 		Settings {
 			name: String::from("guest"),
-			language: String::from("en"),
+			language: Language::English,
 			screen_width: 960,
 			screen_height: 590,
 			general_scaling_factor: 1.0, battlefield_scaling_factor: 1.0,
-			std_font_size: 20, title_font_size: 60,
+			std_font_size: 20, title_font_size: 60, health_font_size: 30,
 		}
 	}
 	
@@ -210,7 +210,13 @@ impl Settings {
 										if let Some(just_c) = buf.next() {c = just_c} else { println!("Configuration file ended unexpectedly."); break; }
 									}
 									if key == "name" {result.name = value}
-									else if key == "000" {result.language = value;}
+									else if key == "000" {
+										result.language = match &value[..] {
+											"en" | "EN" | "english" | "English" => Language::English,
+											"de" | "deutsch" | "Deutsch" | "german" | "German" => Language::German,
+											_ => Language::English,
+										};
+									}
 									else {
 										let v : f64 = if let Ok(v) = value.parse::<f64>(){v}
 												else if let Ok(v) = value.parse::<u32>(){v as f64}
@@ -222,6 +228,7 @@ impl Settings {
 											"004" => result.battlefield_scaling_factor = v,
 											"005" => result.std_font_size = v as u32,
 											"006" => result.title_font_size = v as u32,
+											"007" => result.health_font_size = v as u32,
 											_ => println!("Corrupted configuration file, unexpected key: {}. Value was {}. ", key, v)
 										}
 									}
@@ -279,11 +286,24 @@ impl Settings {
 		(self.title_font_size as f64 * self.general_scaling_factor) as u32
 	}
 	
-	pub fn get_language(&self) -> String {
-		self.language.clone()
+	pub fn set_health_font_size(&mut self, s: u32) {
+		self.health_font_size = s;
+	}	
+	pub fn get_health_font_size(&self) -> u32 {
+		(self.health_font_size as f64 * self.general_scaling_factor) as u32
 	}
 	
-	pub fn set_language(&mut self, s: String) {
+	pub fn get_language(&self) -> Language {
+		self.language
+	}
+	
+	pub fn set_language(&mut self, s: Language) {
 		self.language = s;
 	}
+}
+
+#[derive(Clone, Copy)]
+pub enum Language {
+	English,
+	German
 }

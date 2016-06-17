@@ -12,7 +12,7 @@ use std::rc::Rc;
 use self::land::Land;
 use self::tooltips::Tooltips;
 use utils::ClickableRectangle;
-use definitions::{MapUserInteraction, DrawRequest, Drawable, GameState, Settings};
+use definitions::{MapUserInteraction, DrawRequest, Drawable, GameState, Settings, Language};
 
 use super::piston_window::*;
 use super::gfx_device_gl::Resources;
@@ -113,10 +113,9 @@ impl Map{
 			}
 		}
 		
-		let tooltips = match &config.get_language()[..] {
-			"en" | "EN" | "english" | "English" => Tooltips::new_en(),
-			"de" | "deutsch" | "Deutsch" | "german" | "German" => Tooltips::new_de(),
-			_ => Tooltips::new_en(),
+		let tooltips = match config.get_language() {
+			Language::English => Tooltips::new_en(),
+			Language::German => Tooltips::new_de(),
 		};
 		
 		Map{

@@ -14,7 +14,7 @@ pub struct AggressiveEnemy {
 impl AggressiveEnemy {
     /// The level scales some attributes, it can be used to produce stronger units of the same type.
 	pub fn new(x: f64, y: f64, level: f64) -> AggressiveEnemy {
-		let scale = level * level.sqrt();
+		let scale = level * level / 2.0;
 		let hp = ENEMY_HEALTH[AGGRO_EID] + ENEMY_HEALTH_SCALE[AGGRO_EID] * scale;
 		let ap = ENEMY_ATTACK[AGGRO_EID] + ENEMY_ATTACK_SCALE[AGGRO_EID] * scale;
 		let attr = EnemyAttributes {

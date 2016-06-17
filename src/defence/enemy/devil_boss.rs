@@ -11,7 +11,7 @@ pub struct DevilBoss {
 impl DevilBoss {
     /// The level scales some attributes, it can be used to produce stronger units of the same type.
 	pub fn new(x: f64, y: f64, level: f64) -> DevilBoss {
-		let scale = level * level.sqrt();
+		let scale = level * level / 2.0;
 		let hp = ENEMY_HEALTH[DEVIL_BOSS_EID] + ENEMY_HEALTH_SCALE[DEVIL_BOSS_EID] * scale;
 		let ap = ENEMY_ATTACK[DEVIL_BOSS_EID] + ENEMY_ATTACK_SCALE[DEVIL_BOSS_EID] * scale;
 		let attr = EnemyAttributes {

@@ -35,7 +35,7 @@ fn apply_range_bonus(r: f64, b: u8) -> f64 {
 	r + (b as f64) * 10.0
 }
 fn apply_attack_bonus(a: f64, b: u8) -> f64 {
-	a + (b as f64) * 10.0 
+	a + (b as f64) * 12.0 
 }
 fn apply_defence_bonus(d: f64, b: u8) -> f64 {
 	d + (b as f64) * 20.0

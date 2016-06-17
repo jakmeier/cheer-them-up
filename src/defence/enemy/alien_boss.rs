@@ -11,7 +11,7 @@ pub struct AlienBoss {
 impl AlienBoss {
     /// The level scales some attributes, it can be used to produce stronger units of the same type.
 	pub fn new(x: f64, y: f64, level: f64) -> AlienBoss {
-		let scale = level * level.sqrt();
+		let scale = level * level / 2.0;
 		let hp = ENEMY_HEALTH[ALIEN_BOSS_EID] + ENEMY_HEALTH_SCALE[ALIEN_BOSS_EID] * scale;
 		let ap = ENEMY_ATTACK[ALIEN_BOSS_EID] + ENEMY_ATTACK_SCALE[ALIEN_BOSS_EID] * scale;
 		let attr = EnemyAttributes {

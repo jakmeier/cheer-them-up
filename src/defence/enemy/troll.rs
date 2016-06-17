@@ -5,9 +5,9 @@ use super::{Enemy, EnemyAttributes};
 use super::super::jkm_shortest_path_map::JkmShortestPathMap;
 use super::super::tower::Tower;
 
-const HEALTH_REGENERATION_BASE: f64 = 10.0;
-const HEALTH_REGENERATION_SCALE: f64 = 2.5;
-const SPEED_REGENERATION_COOLDOWN: f64 = 3.0;
+const HEALTH_REGENERATION_BASE: f64 = 20.0;
+const HEALTH_REGENERATION_SCALE: f64 = 10.0;
+const SPEED_REGENERATION_COOLDOWN: f64 = 2.0;
 
 pub struct Troll {
 	attributes: EnemyAttributes,
@@ -18,7 +18,7 @@ pub struct Troll {
 impl Troll {
     /// The level scales some attributes, it can be used to produce stronger units of the same type.
 	pub fn new(x: f64, y: f64, level: f64) -> Troll {
-		let scale = level * level.sqrt();
+		let scale = level * level / 2.0;
 		let hp = ENEMY_HEALTH[TROLL_EID] + ENEMY_HEALTH_SCALE[TROLL_EID] * scale;
 		let ap = ENEMY_ATTACK[TROLL_EID] + ENEMY_ATTACK_SCALE[TROLL_EID] * scale;
 		let attr = EnemyAttributes {

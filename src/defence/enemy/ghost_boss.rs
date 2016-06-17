@@ -13,7 +13,7 @@ pub struct GhostBoss {
 impl GhostBoss {
     /// The level scales some attributes, it can be used to produce stronger units of the same type.
 	pub fn new(x: f64, y: f64, level: f64) -> GhostBoss {
-		let scale = level * level.sqrt();
+		let scale = level * level / 2.0;
 		let hp = ENEMY_HEALTH[GHOST_BOSS_EID] + ENEMY_HEALTH_SCALE[GHOST_BOSS_EID] * scale;
 		let ap = ENEMY_ATTACK[GHOST_BOSS_EID] + ENEMY_ATTACK_SCALE[GHOST_BOSS_EID] * scale;
 		let attr = EnemyAttributes {

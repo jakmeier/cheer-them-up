@@ -1,0 +1,17 @@
+Benutzung:
+Aendere Werte in den eckigen Kalmmern, aber nur in denen ohne Doppelkreuz (Hashtag).
+Fuege keine neuen eckigen Klammern oder Doppelkreuze hinzu.
+
+Name (Der Name wird auf der Rangliste sichtbar sein): [#name][Gast]
+
+Allgemeine Einstellungen:
+Sprache (Verfuegbar: en, de): [#000][de]
+Fensterbreite: [#001][1440]
+Fensterhoehe: [#002][885]
+Schriftgroessefaktor: [#003][1.5]
+
+Um das Aussehen spezifischer zu veraendern, nutze die erweiterten Einstellungen:
+Schlachtfledelemente Groessenfaktor : [#004][1.0]
+Textgroesse: [#005][20]
+Titelgroesse: [#006][60]
+Lebensanzeigegroesse: [#007][30]

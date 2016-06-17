@@ -25,7 +25,7 @@ use micro::{PersistentWinnerState, AbsolutelyChangeableState, AI, ClickableGame}
 use piston_window::*;
 
 use constants::*;
-use definitions::{DrawRequest, Drawable, DefenceUserInteraction, MapUserInteraction, GameState, TowerAttribute, Statistics, Settings};
+use definitions::{DrawRequest, Drawable, DefenceUserInteraction, MapUserInteraction, GameState, TowerAttribute, Statistics, Settings, Language};
 
 
 /// Root structure for the game. It contains all the mini games (micro) as well as the higher level game parts (macro) and connects them.
@@ -215,18 +215,53 @@ pub struct Game {
 					// draw overlay
 					rectangle([0.2, 0.2, 0.2, 0.9], [0.1 * self.screen_width, 0.1 * self.screen_height, 0.8 * self.screen_width, 0.8 * self.screen_height ], c.transform, g);
 					if self.defence.alive() {
-						text::Text::new_color([1.0,1.0,1.0,1.0], self.config.get_title_font_size()).draw( "Press space to play", &mut self.font, &c.draw_state, c.transform.trans(0.2 * self.screen_width, 0.4 * self.screen_height), g);
+						match self.config.get_language() {
+							Language::English => text::Text::new_color([1.0,1.0,1.0,1.0], self.config.get_title_font_size()).draw( "Press space to play", &mut self.font, &c.draw_state, c.transform.trans(0.2 * self.screen_width, 0.4 * self.screen_height), g),
+							Language::German  => text::Text::new_color([1.0,1.0,1.0,1.0], self.config.get_title_font_size()).draw( "Start mit Leertaste", &mut self.font, &c.draw_state, c.transform.trans(0.2 * self.screen_width, 0.4 * self.screen_height), g),
+						}
+						
 					}
 					else if self.submitted {
-						text::Text::new_color([1.0,1.0,1.0,1.0], self.config.get_title_font_size()).draw( "     Game over     ", &mut self.font, &c.draw_state, c.transform.trans(0.2 * self.screen_width, 0.3 * self.screen_height), g);
-						text::Text::new_color([1.0,1.0,1.0,1.0], self.config.get_title_font_size()).draw( "  Score submitted  ", &mut self.font, &c.draw_state, c.transform.trans(0.2 * self.screen_width, 0.6 * self.screen_height), g);
+						let h1: &str;
+						let h2: &str;
+						match self.config.get_language() {
+							Language::English => {
+								h1 = "     Game over     ";
+								h2 = "  Score submitted  ";
+							}
+							Language::German => {
+								h1 = "   Spiel vorbei    ";
+								h2 = "Punkzahlt versendet";
+							}
+						}
+						text::Text::new_color([1.0,1.0,1.0,1.0], self.config.get_title_font_size()).draw( h1, &mut self.font, &c.draw_state, c.transform.trans(0.2 * self.screen_width, 0.25 * self.screen_height), g);
+						text::Text::new_color([1.0,1.0,1.0,1.0], self.config.get_title_font_size()).draw( h2, &mut self.font, &c.draw_state, c.transform.trans(0.2 * self.screen_width, 0.4 * self.screen_height), g);
 					}
 					else {
-						text::Text::new_color([1.0,1.0,1.0,1.0], self.config.get_title_font_size()).draw( "     Game over     ", &mut self.font, &c.draw_state, c.transform.trans(0.2 * self.screen_width, 0.3 * self.screen_height), g);
-						text::Text::new_color([1.0,1.0,1.0,1.0], self.config.get_title_font_size()).draw( "Press enter to submit", &mut self.font, &c.draw_state, c.transform.trans(0.2 * self.screen_width, 0.6 * self.screen_height), g);
+						let h1: &str;
+						let h2: &str;
+						let h3: &str;
+						match self.config.get_language() {
+							Language::English => {
+								h1 = "     Game over     ";
+								h2 = "Press enter to ";
+								h3 = "submit the score";
+							}
+							Language::German => {
+								h1 = "   Spiel vorbei    ";
+								h2 = "Eingabetaste drücken";
+								h3 = "um abzusenden";
+							}
+						}
+						text::Text::new_color([1.0,1.0,1.0,1.0], self.config.get_title_font_size()).draw( h1, &mut self.font, &c.draw_state, c.transform.trans(0.2 * self.screen_width, 0.25 * self.screen_height), g);
+						text::Text::new_color([1.0,1.0,1.0,1.0], self.config.get_title_font_size()).draw( h2, &mut self.font, &c.draw_state, c.transform.trans(0.2 * self.screen_width, 0.4 * self.screen_height), g);
+						text::Text::new_color([1.0,1.0,1.0,1.0], self.config.get_title_font_size()).draw( h3, &mut self.font, &c.draw_state, c.transform.trans(0.2 * self.screen_width, 0.6 * self.screen_height), g);
 					};
-					
-					text::Text::new_color([1.0,1.0,1.0,1.0], self.config.get_title_font_size()).draw( "Score: ", &mut self.font, &c.draw_state, c.transform.trans(0.2 * self.screen_width, 0.8 * self.screen_height), g);
+					let s = match self.config.get_language() {
+						Language::English => "Score: ",
+						Language::German => "Punktzahl: ",
+					};
+					text::Text::new_color([1.0,1.0,1.0,1.0], self.config.get_title_font_size()).draw( s, &mut self.font, &c.draw_state, c.transform.trans(0.2 * self.screen_width, 0.8 * self.screen_height), g);
 					text::Text::new_color([1.0,1.0,1.0,1.0], self.config.get_title_font_size()).draw( &(self.stats.get_score().to_string()), &mut self.font, &c.draw_state, c.transform.trans(0.6 * self.screen_width, 0.8 * self.screen_height), g);
 				}
 			
@@ -248,7 +283,10 @@ pub struct Game {
 										self.submitted = true;
 									}
 									else {
-										println!("Score could not be sumbitted. Check you internet connection and try again.");
+										match self.config.get_language() {
+											Language::English => println!("Score could not be sumbitted. Check you internet connection and try again."),
+											Language::German => println!("Punktzahl konnte nicht gesendet werden. Überprüfe deine Internetverbindung und versuche es erneut."),
+										}
 									}
 								}
 								_ => {}

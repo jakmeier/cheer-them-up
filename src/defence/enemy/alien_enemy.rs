@@ -9,7 +9,7 @@ pub struct Alien {
 
 impl Alien {
 	pub fn new(x: f64, y: f64, level: f64) -> Alien {
-		let scale = level * level.sqrt();
+		let scale = level * level / 2.0;
 		let hp = ENEMY_HEALTH[ALIEN_EID] + ENEMY_HEALTH_SCALE[ALIEN_EID] * scale;
 		let ap = ENEMY_ATTACK[ALIEN_EID] + ENEMY_ATTACK_SCALE[ALIEN_EID] * scale;
 		let attr = EnemyAttributes {

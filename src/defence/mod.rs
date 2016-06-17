@@ -328,7 +328,7 @@ impl Defence {
 		}
 		
 		// Life display
-		text::Text::new_color([0.05,0.75,0.05,1.0], self.config.get_std_font_size()).draw( &(self.hp.to_string()), &mut self.font, &draw_state, view.trans(3.0, battlefield_h ), g);
+		text::Text::new_color([0.05,0.75,0.05,1.0], self.config.get_health_font_size()).draw( &(self.hp.to_string()), &mut self.font, &draw_state, view.trans(3.0, battlefield_h ), g);
 		
 		// shop
 		let draw_req = self.shop.draw(g, view.trans(0.0, battlefield_h), w, h - battlefield_h, [mouse[0], mouse[1] - battlefield_h], &self.tower_sprites, dx, dy, state);

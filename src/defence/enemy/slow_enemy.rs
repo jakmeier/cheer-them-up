@@ -9,7 +9,7 @@ pub struct SlowEnemy {
 
 impl SlowEnemy {
 	pub fn new(x: f64, y: f64, level: f64) -> SlowEnemy {
-		let scale = level * level.sqrt();
+		let scale = level * level / 2.0;
 		let hp = ENEMY_HEALTH[SLOW_EID] + ENEMY_HEALTH_SCALE[SLOW_EID] * scale;
 		let ap = ENEMY_ATTACK[SLOW_EID] + ENEMY_ATTACK_SCALE[SLOW_EID] * scale;
 		let attr = EnemyAttributes {

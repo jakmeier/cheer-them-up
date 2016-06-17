@@ -10,7 +10,7 @@ pub struct BasicEnemy {
 impl BasicEnemy {
     /// The level scales some attributes, it can be used to produce stronger units of the same type.
 	pub fn new(x: f64, y: f64, level: f64) -> BasicEnemy {
-		let scale = level * level.sqrt();
+		let scale = level * level / 2.0;
 		let hp = ENEMY_HEALTH[BASIC_EID] + ENEMY_HEALTH_SCALE[BASIC_EID] * scale;
 		let ap = ENEMY_ATTACK[BASIC_EID] + ENEMY_ATTACK_SCALE[BASIC_EID] * scale;
 		let attr = EnemyAttributes {

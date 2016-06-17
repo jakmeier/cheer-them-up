@@ -2,15 +2,15 @@ Usage:
 Only change the values within brackets, but not those containing a hashtag.
 Also, do not add more hashtags or brackets to the file.
 
-Name (The name seen on the scoreboard): [#name][Jakob]
+Name (The name seen on the scoreboard): [#name][guest]
 
 General settings:
-Language (Currently available: en, de): [#000][de]
-Screen width: [#001][2880]
-Screen height: [#002][1770]
-Font size factor: [#003][3.5]
+Language (Currently available: en, de): [#000][en]
+Screen width: [#001][1440]
+Screen height: [#002][885]
+Font size factor: [#003][1.5]
 
 To change the UI more specifically, use the advanced settings below:
-Battlefield UI size factor : [#004][2.0]
+Battlefield UI size factor : [#004][1.0]
 Text font size: [#005][20]
 Title font size: [#006][60]

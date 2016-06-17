@@ -3,9 +3,14 @@
 use super::enemy::Enemy;
 use super::enemy::basic_enemy::BasicEnemy;
 use super::enemy::slow_enemy::SlowEnemy;
-use super::enemy::fast_enemy::FastEnemy;
+use super::enemy::alien_enemy::Alien;
 use super::enemy::aggressive_enemy::AggressiveEnemy;
-use super::enemy::boss_enemy::Boss;
+use super::enemy::alien_boss::AlienBoss;
+use super::enemy::devil_enemy::Devil;
+use super::enemy::devil_boss::DevilBoss;
+use super::enemy::ghost_enemy::Ghost;
+use super::enemy::ghost_boss::GhostBoss;
+use super::enemy::troll::Troll;
 
 pub struct Ctrl {
 	spawn_x: f64, spawn_y: f64,
@@ -99,7 +104,7 @@ impl Ctrl {
 				}
 			},
 			16 => {
-				if !self.basic_enemies(vec, 20, 20.0, 2.0){ 
+				if !self.basic_enemies(vec, 10, 20.0, 2.0){ 
 						self.state = START_SHORT_BREAK ;
 				}
 			},
@@ -139,11 +144,12 @@ impl Ctrl {
 				}
 			},
 			24 => {
-				self.boss(vec, 0.0);
+				self.alien_boss(vec, 0.0);
 				self.state = START_NORMAL_BREAK ;
 			},
 			
 			// End loop, spwaning the same waves over and over again with increasing strength
+			// More waves are added after the first few loop iterations
 			25 => {
 				let level = (self.loop_counter + 2) as f64;
 				let number = 15 + 2 * self.loop_counter;
@@ -174,15 +180,105 @@ impl Ctrl {
 			},
 			29 => {
 				let level = self.loop_counter as f64;
-				self.boss(vec, level);
-				self.state = START_SHORT_BREAK ;
-				self.loop_counter += 1;
-				self.highest_state = 24; // going to 25 after the break
+				let number = 5 + self.loop_counter;
+				let time = if self.loop_counter < 10 { 5.0 + self.loop_counter as f64} else { 15.0 };
+				if !self.alien_gang(vec, number, time, level) {
+					self.state = START_SHORT_BREAK ;
+					if self.loop_counter == 0 {self.loop_counter += 1; self.highest_state = 24;} // going to 25 after the break
+				}
 			},
-			
-			
+			// devils
+			30 => {
+				let level = (self.loop_counter - 1) as f64;
+				let number = 10 + 2 * self.loop_counter;
+				if !self.devils(vec, number, 15.0, level){ 
+						self.state = START_SHORT_BREAK ;	
+				}
+			},
+			31 => {
+				let level = (self.loop_counter - 1) as f64;
+				self.devil_boss(vec, level);
+				self.state = START_NORMAL_BREAK ;
+				if self.loop_counter == 1 {self.loop_counter += 1; self.highest_state = 24;} // going to 25 after the break
+			},
+			32 => {
+				let level = (self.loop_counter - 2) as f64;
+				let number = 5 + self.loop_counter;
+				let time = if self.loop_counter < 10 { 5.0 + self.loop_counter as f64} else { 15.0 };
+				if !self.devil_gang(vec, number, time, level) {
+					self.state = START_SHORT_BREAK ;
+					if self.loop_counter == 2 {self.loop_counter += 1; self.highest_state = 24;} // going to 25 after the break
+				}
+			},
+			// ghosts
+			33 => {
+				let level = (self.loop_counter - 3) as f64;
+				let number = 8 + 2 * self.loop_counter;
+				if !self.ghosts(vec, number, 20.0, level){ 
+						self.state = START_SHORT_BREAK ;	
+				}
+			},
+			34 => {
+				let level = (self.loop_counter - 3) as f64;
+				self.ghost_boss(vec, level);
+				self.state = START_NORMAL_BREAK ;
+				if self.loop_counter == 3 {self.loop_counter += 1; self.highest_state = 24;} // going to 25 after the break
+			},
+			35 => {
+				let level = (self.loop_counter - 4) as f64;
+				let number = 5 + self.loop_counter;
+				let time = if self.loop_counter < 15 { 5.0 + (self.loop_counter - 4) as f64} else { 15.0 };
+				if !self.ghost_gang(vec, number, time, level) {
+					self.state = START_SHORT_BREAK ;
+					if self.loop_counter == 4 {self.loop_counter += 1; self.highest_state = 24;} // going to 25 after the break
+				}
+			},
+			// Trolls
+			36 => {
+				let level = (self.loop_counter - 5) as f64;
+				self.troll(vec, level);
+				self.state = START_SHORT_BREAK ;
+				if self.loop_counter == 5 {self.loop_counter += 1; self.highest_state = 24;} // going to 25 after the break
+			},
+			37 => {
+				let level = (self.loop_counter + 3) as f64;
+				let number = 30 + 1 * self.loop_counter;
+				if !self.slow_enemies(vec, number, 20.0, level){ 
+						self.state = START_SHORT_BREAK ;
+				}
+			},
+			38 => {
+				let level = (self.loop_counter - 6) as f64;
+				let number = 8 + 2 * self.loop_counter;
+				if !self.troll_and_aggressive_enemies(vec, number, 20.0, level){ 
+						self.state = START_SHORT_BREAK ;	
+						if self.loop_counter == 7 {self.loop_counter += 1; self.highest_state = 24;} // going to 25 after the break
+				}
+			},
+			39 => {
+				let level = self.loop_counter  as f64;
+				let number = 30 + 1 * self.loop_counter;
+				if !self.devils(vec, number, 20.0, level){ 
+						self.state = START_NORMAL_BREAK ;
+				}
+			},
+			40 => {
+				let level = (self.loop_counter - 4) as f64;
+				let number = 2 * self.loop_counter;
+				if !self.troll_mix(vec, number, 20.0, level){ 
+						self.state = START_SHORT_BREAK ;	
+						if self.loop_counter == 8 {self.loop_counter += 1; self.highest_state = 24;} // going to 25 after the break
+				}
+			},
+			// starting endless loop without changes other than strength
+			41 => {
+				self.loop_counter += 1; 
+				self.state = 25; // go to 25 now
+				self.highest_state = 25; // going to 26 after the next break
+			}
 			_ => { println!("unexpected state: {}", self.state); self.state = RECOVERY_STATE; }
 		}
+		
 	}
 	
 	// Wave types
@@ -215,7 +311,7 @@ impl Ctrl {
 		if n <= self.unit_counter { return false }
 		if self.clock >= t / n as f64 {
 			self.clock = 0.0;
-			let new_enemy = Box::new(FastEnemy::new( self.spawn_x, self.spawn_y, level) );
+			let new_enemy = Box::new(Alien::new( self.spawn_x, self.spawn_y, level) );
 			vec.push(new_enemy);
 			self.unit_counter += 1;
 		}
@@ -233,11 +329,134 @@ impl Ctrl {
 		true
 	}
 	
-	fn boss(&mut self, vec: &mut Vec<Box<Enemy>>, level: f64) {
-		let new_enemy = Box::new(Boss::new( self.spawn_x, self.spawn_y, level) );
+	fn alien_boss(&mut self, vec: &mut Vec<Box<Enemy>>, level: f64) {
+		let new_enemy = Box::new(AlienBoss::new( self.spawn_x, self.spawn_y, level) );
 		vec.push(new_enemy);
 	}
+	// Sending an alien boss and n aliens (fast enemies)
+	fn alien_gang(&mut self, vec: &mut Vec<Box<Enemy>>, n: u32, t: f64, level: f64) -> bool {
+		if self.unit_counter == 0 { 
+			let new_enemy = Box::new(AlienBoss::new( self.spawn_x, self.spawn_y, level) );
+			vec.push(new_enemy);
+			self.unit_counter += 1;
+		}
+		if n <= self.unit_counter + 1 { return false }
+		if self.clock >= t / n as f64 {
+			self.clock = 0.0;
+			let new_enemy = Box::new(Alien::new( self.spawn_x, self.spawn_y, level) );
+			vec.push(new_enemy);
+			self.unit_counter += 1;
+		}
+		true
+	}
 	
+	fn devils(&mut self, vec: &mut Vec<Box<Enemy>>, n: u32, t: f64, level: f64) -> bool {
+		if n <= self.unit_counter { return false }
+		if self.clock >= t / n as f64 {
+			self.clock = 0.0;
+			let new_enemy = Box::new(Devil::new( self.spawn_x, self.spawn_y, level) );
+			vec.push(new_enemy);
+			self.unit_counter += 1;
+		}
+		true
+	}
+	
+	fn devil_boss(&mut self, vec: &mut Vec<Box<Enemy>>, level: f64) {
+		let new_enemy = Box::new(DevilBoss::new( self.spawn_x, self.spawn_y, level) );
+		vec.push(new_enemy);
+	}
+	fn devil_gang(&mut self, vec: &mut Vec<Box<Enemy>>, n: u32, t: f64, level: f64) -> bool {
+		if self.unit_counter == 0 { 
+			let new_enemy = Box::new(DevilBoss::new( self.spawn_x, self.spawn_y, level) );
+			vec.push(new_enemy);
+			self.unit_counter += 1;
+		}
+		if n <= self.unit_counter + 1 { return false }
+		if self.clock >= t / n as f64 {
+			self.clock = 0.0;
+			let new_enemy = Box::new(Devil::new( self.spawn_x, self.spawn_y, level) );
+			vec.push(new_enemy);
+			self.unit_counter += 1;
+		}
+		true
+	}
+	
+	fn ghosts(&mut self, vec: &mut Vec<Box<Enemy>>, n: u32, t: f64, level: f64) -> bool {
+		if n <= self.unit_counter { return false }
+		if self.clock >= t / n as f64 {
+			self.clock = 0.0;
+			let new_enemy = Box::new(Ghost::new( self.spawn_x, self.spawn_y, level) );
+			vec.push(new_enemy);
+			self.unit_counter += 1;
+		}
+		true
+	}
+	
+	fn ghost_boss(&mut self, vec: &mut Vec<Box<Enemy>>, level: f64) {
+		let new_enemy = Box::new(GhostBoss::new( self.spawn_x, self.spawn_y, level) );
+		vec.push(new_enemy);
+	}
+	fn ghost_gang(&mut self, vec: &mut Vec<Box<Enemy>>, n: u32, t: f64, level: f64) -> bool {
+		if n <= self.unit_counter { 
+			if self.clock >= t / n as f64 {
+				let new_enemy = Box::new(GhostBoss::new( self.spawn_x, self.spawn_y, level) );
+				vec.push(new_enemy);
+				return false;
+			}
+		}
+		if self.clock >= t / n as f64 {
+			self.clock = 0.0;
+			let new_enemy = Box::new(Ghost::new( self.spawn_x, self.spawn_y, level) );
+			vec.push(new_enemy);
+			self.unit_counter += 1;
+		}
+		true
+	}
+	
+	fn troll(&mut self, vec: &mut Vec<Box<Enemy>>, level: f64) {
+		let new_enemy = Box::new(Troll::new( self.spawn_x, self.spawn_y, level) );
+		vec.push(new_enemy);
+	}
+	// n aggressive enemies and one troll
+	fn troll_and_aggressive_enemies(&mut self, vec: &mut Vec<Box<Enemy>>, n: u32, t: f64, level: f64) -> bool {
+		if n <= self.unit_counter { 
+			if self.clock >= t / n as f64 {
+				let new_enemy = Box::new(Troll::new( self.spawn_x, self.spawn_y, level) );
+				vec.push(new_enemy);
+				return false ;
+			}
+		}
+		if self.clock >= t / n as f64 {
+			self.clock = 0.0;
+			let new_enemy = Box::new(AggressiveEnemy::new( self.spawn_x, self.spawn_y, level) );
+			vec.push(new_enemy);
+			self.unit_counter += 1;
+		}
+		true
+	}
+	// one troll, n/2 basic enemies and n/2 slow enemies
+	fn troll_mix(&mut self, vec: &mut Vec<Box<Enemy>>, n: u32, t: f64, level: f64) -> bool {
+		if n <= self.unit_counter { 
+			if self.clock >= t / n as f64 {
+				let new_enemy = Box::new(Troll::new( self.spawn_x, self.spawn_y, level) );
+				vec.push(new_enemy);
+				return false;
+			}
+		}
+		if self.clock >= t / n as f64 {
+			self.clock = 0.0;
+			let new_enemy: Box<Enemy>;
+			if self.unit_counter % 2 == 0 {
+				new_enemy = Box::new(BasicEnemy::new( self.spawn_x, self.spawn_y, level) );
+			}
+			else {
+				new_enemy = Box::new(SlowEnemy::new( self.spawn_x, self.spawn_y, level) );
+			}
+			vec.push(new_enemy);
+			self.unit_counter += 1;
+		}
+		true
+	}
 }
 
 // Constantsv for this module

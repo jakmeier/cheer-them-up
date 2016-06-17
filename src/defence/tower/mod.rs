@@ -11,6 +11,7 @@ pub mod slow_tower;
 pub mod rocket_tower;
 
 use constants::*;
+use super::HEALTH_BAR_HEIGHT;
 use super::projectile::Projectile;
 use super::enemy::Enemy;
 use definitions::GameState;

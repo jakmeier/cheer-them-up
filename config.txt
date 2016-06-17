@@ -1,4 +1,10 @@
-General settings
+Usage:
+Only change the values within brackets, but not those containing a hashtag.
+Also, do not add more hashtags or brackets to the file.
+
+Name (The name seen on the scoreboard): [#name][Jakob]
+
+General settings:
 Language (Currently available: en, de): [#000][de]
 Screen width: [#001][2880]
 Screen height: [#002][1770]

@@ -1,15 +1,5 @@
 //! Contains constants used in the game to balance it. At the moment there is only one difficulty, but maybe there will be more later.
 
-
-// UI (ALL UI elements should be here, in case different resolutions are supported in the future, this could help a lot.)
-//pub const GENERAL_SCALE_FACTOR: f64 = 3.0;
-
-//pub const STD_FONT_SIZE: u32 = 20; //* GENERAL_SCALE_FACTOR as u32;
-//pub const TITLE_FONT_SIZE: u32 = 60;// * GENERAL_SCALE_FACTOR as u32;
-//pub const BATTLEFIELD_UI_SCALE: f64 = 1.0 * GENERAL_SCALE_FACTOR;
-
-pub const HEALTH_BAR_HEIGHT: f64 = 8.0;
-
 //Meta
 /**/
 pub const START_RESSOURCES: [u32;4] = [0,0,0,0];
@@ -111,36 +101,53 @@ pub const ORACLE_RESEARCH_PRICE_LIST: [[u32;4]; ORACLE_RESEARCH_LEVELS] =
 	pub const BF_SHOP_SPLIT_RATIO: f64 = 0.875;
 	
 	// General Sprites
-	pub const GENERAL_BATTLEFIELD_SPRITE_LIST: [&'static str; 4] = ["highway_from_hell.png", "cross.png", "delete.png", "explosion.png"];
+	pub const GENERAL_BATTLEFIELD_SPRITE_LIST: [&'static str; 5] = ["highway_from_hell.png", "cross.png", "delete.png", "explosion.png", "smiley.png"];
 	
 	// Enemy
 
 		//ids
-		pub const NUMBER_OF_ES: usize = 5;
+		pub const NUMBER_OF_ES: usize = 10;
 		pub const BASIC_EID: usize = 0;
 		pub const SLOW_EID: usize = 1;
-		pub const FAST_EID: usize = 2;
+		pub const ALIEN_EID: usize = 2;
 		pub const AGGRO_EID: usize = 3;
-		pub const BOSS_EID: usize = 4;
-		
-		// Speed list
-		pub const ENEMY_SPEED: [f64; 3] = [25.0, 60.0, 100.0];
-		
+		pub const ALIEN_BOSS_EID: usize = 4;
+		pub const DEVIL_EID: usize = 5;
+		pub const DEVIL_BOSS_EID: usize = 6;
+		pub const GHOST_EID: usize = 7;
+		pub const GHOST_BOSS_EID: usize = 8;
+		pub const TROLL_EID: usize = 9;
+			
 		// Stats for each enemy type
-		pub const ENEMY_ATTACK: [f64; NUMBER_OF_ES] = [7.0, 10.0, 3.0, 10.0, 75.0];
-		pub const ENEMY_ATTACK_SCALE: [f64; NUMBER_OF_ES] = [2.0, 3.0, 1.0, 2.5, 25.0];
-		pub const ENEMY_ATTACK_RATIO: [f64; NUMBER_OF_ES] = [0.5, 1.0, 0.4, 0.5, 0.6];
+		pub const ENEMY_ATTACK: [f64; NUMBER_OF_ES] = 		[7.0, 10.0, 3.0, 10.0, 75.0, 10.0, 75.0, 1.0, 1.0, 150.0];
+		pub const ENEMY_ATTACK_SCALE: [f64; NUMBER_OF_ES] = [2.0,  3.0, 1.0,  2.5, 25.0,  2.0, 25.0, 0.0, 0.0,  50.0];
+		pub const ENEMY_ATTACK_RATIO: [f64; NUMBER_OF_ES] = [0.5,  1.0, 0.4,  0.5,  0.7,  0.8,  1.0, 1.0, 1.0,   2.0];
 		
-		pub const ENEMY_HEALTH: [f64; NUMBER_OF_ES] = [30.0, 60.0, 10.0, 50.0, 1000.0];
-		pub const ENEMY_HEALTH_SCALE: [f64; NUMBER_OF_ES] = [30.0, 45.0, 20.0, 50.0, 600.0];
+		pub const ENEMY_HEALTH: [f64; NUMBER_OF_ES] = 		[30.0, 60.0, 10.0, 50.0, 1000.0, 100.0, 1000.0, 100.0, 500.0, 1000.0];
+		pub const ENEMY_HEALTH_SCALE: [f64; NUMBER_OF_ES] = [30.0, 45.0, 20.0, 50.0,  400.0,  25.0,  300.0, 20.0, 150.0, 500.0];
 		
 		//Sprite constants	
 		
-		pub const ENEMY_SPRITE_LIST: [&'static str; NUMBER_OF_ES] = ["enemy_i.png", "enemy_ii.png", "enemy_iii.png", "enemy_iv.png", "boss.png"];
-		
+		pub const ENEMY_SPRITE_LIST: [&'static str; NUMBER_OF_ES] = 
+			[
+			"enemy_i.png", 
+			"enemy_ii.png", 
+			"enemy_iii.png", 
+			"enemy_iv.png", 
+			"boss.png",
+			"devil.png",
+			"devil_boss.png",
+			"ghost.png",
+			"ghost_boss.png",
+			"troll.png",
+			];
+			
 		//size
 		pub const STD_ENEMY_W: f64 = 50.0;
 		pub const STD_ENEMY_H: f64 = 50.0;	
+		
+		// Speed levels
+		pub const ENEMY_SPEED: [f64; 3] = [25.0, 60.0, 100.0];
 		
 	// Tower
 		

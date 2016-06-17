@@ -142,6 +142,7 @@ impl Statistics {
 
 /// Stores values loaded from the config.txt file and makes  them available to the app
 pub struct Settings {
+	name: String,
 	language: String,
 	screen_width: u32, screen_height: u32,
 	general_scaling_factor: f64, battlefield_scaling_factor: f64,
@@ -162,6 +163,7 @@ impl Settings {
 	**/
 	pub fn new() -> Settings {
 		Settings {
+			name: String::from("guest"),
 			language: String::from("en"),
 			screen_width: 960,
 			screen_height: 590,
@@ -207,7 +209,8 @@ impl Settings {
 										value.push(c);
 										if let Some(just_c) = buf.next() {c = just_c} else { println!("Configuration file ended unexpectedly."); break; }
 									}
-									if key == "000" {result.language = value;}
+									if key == "name" {result.name = value}
+									else if key == "000" {result.language = value;}
 									else {
 										let v : f64 = if let Ok(v) = value.parse::<f64>(){v}
 												else if let Ok(v) = value.parse::<u32>(){v as f64}
@@ -237,6 +240,9 @@ impl Settings {
 
 // getter and setter
 impl Settings {
+	pub fn get_name(&self) -> String {
+		self.name.clone()
+	}
 	pub fn set_screen_dimensions(&mut self, wh: (u32,u32)) {
 		self.screen_width = wh.0;
 		self.screen_height = wh.1;

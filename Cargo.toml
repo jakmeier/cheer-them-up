@@ -1,14 +1,14 @@
 [package]
-name = "multy_task"
-version = "0.5.6"
+name = "cheer_them_up_game"
+version = "0.6.0"
 authors = ["Jakob Meier <jakobmeier@bluewin.ch>"]
 
 [lib]
-name = "multy_task_lib"
+name = "cheer_them_up"
 path = "src/lib.rs"
 
 [[bin]]
-name = "multy_task_bin"
+name = "cheer_them_up"
 path = "src/main.rs"
 
 [dependencies]
@@ -20,3 +20,7 @@ find_folder = "*"
 freetype-rs = "0.5.0"
 rand = "0.3.14"
 jkm_shortest_path_map = { git = "https://github.com/jakmeier/rusty-shortest-path-map" }
+
+[dependencies.hyper]
+version = "0.9.8"
+default-features = false

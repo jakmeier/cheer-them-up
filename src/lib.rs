@@ -9,6 +9,7 @@ pub mod utils;
 pub mod defence;
 pub mod constants;
 pub mod definitions;
+pub mod net;
 
 extern crate piston_window;
 extern crate gfx_device_gl;
@@ -43,7 +44,8 @@ pub struct Game {
 		cash: cash::CashHeader,
 		state: GameState,
 		stats: Statistics,
-		paused: bool,
+		paused: bool, 
+		submitted: bool,
 		font: Glyphs,
 		config: Rc<Settings>,
 	}
@@ -78,7 +80,7 @@ pub struct Game {
 				cash: cash::CashHeader::new(w),
 				state: state,
 				stats: Statistics::new(),
-				paused: true,
+				paused: true, submitted: false,
 				font: glyphs,
 				config: config.clone(),
 			}
@@ -212,13 +214,18 @@ pub struct Game {
 				if self.paused {
 					// draw overlay
 					rectangle([0.2, 0.2, 0.2, 0.9], [0.1 * self.screen_width, 0.1 * self.screen_height, 0.8 * self.screen_width, 0.8 * self.screen_height ], c.transform, g);
-					let message = if self.defence.alive() {
-						"Press space to play"
+					if self.defence.alive() {
+						text::Text::new_color([1.0,1.0,1.0,1.0], self.config.get_title_font_size()).draw( "Press space to play", &mut self.font, &c.draw_state, c.transform.trans(0.2 * self.screen_width, 0.4 * self.screen_height), g);
+					}
+					else if self.submitted {
+						text::Text::new_color([1.0,1.0,1.0,1.0], self.config.get_title_font_size()).draw( "     Game over     ", &mut self.font, &c.draw_state, c.transform.trans(0.2 * self.screen_width, 0.3 * self.screen_height), g);
+						text::Text::new_color([1.0,1.0,1.0,1.0], self.config.get_title_font_size()).draw( "  Score submitted  ", &mut self.font, &c.draw_state, c.transform.trans(0.2 * self.screen_width, 0.6 * self.screen_height), g);
 					}
 					else {
-						"     Game over     "
+						text::Text::new_color([1.0,1.0,1.0,1.0], self.config.get_title_font_size()).draw( "     Game over     ", &mut self.font, &c.draw_state, c.transform.trans(0.2 * self.screen_width, 0.3 * self.screen_height), g);
+						text::Text::new_color([1.0,1.0,1.0,1.0], self.config.get_title_font_size()).draw( "Press enter to submit", &mut self.font, &c.draw_state, c.transform.trans(0.2 * self.screen_width, 0.6 * self.screen_height), g);
 					};
-					text::Text::new_color([1.0,1.0,1.0,1.0], self.config.get_title_font_size()).draw( message, &mut self.font, &c.draw_state, c.transform.trans(0.2 * self.screen_width, 0.4 * self.screen_height), g);
+					
 					text::Text::new_color([1.0,1.0,1.0,1.0], self.config.get_title_font_size()).draw( "Score: ", &mut self.font, &c.draw_state, c.transform.trans(0.2 * self.screen_width, 0.8 * self.screen_height), g);
 					text::Text::new_color([1.0,1.0,1.0,1.0], self.config.get_title_font_size()).draw( &(self.stats.get_score().to_string()), &mut self.font, &c.draw_state, c.transform.trans(0.6 * self.screen_width, 0.8 * self.screen_height), g);
 				}
@@ -231,7 +238,27 @@ pub struct Game {
 				self.mouse_x = pos[0] as f64;
 				self.mouse_y = pos[1] as f64;
 			}
-			if self.paused && self.defence.alive() {
+			if !self.defence.alive() {
+				if !self.submitted {
+					match inp{
+						Input::Press(but) => {
+							match but{
+								Button::Keyboard(Key::Return) => {
+									if net::send( &self.config.get_name(), self.stats.get_score() ) {
+										self.submitted = true;
+									}
+									else {
+										println!("Score could not be sumbitted. Check you internet connection and try again.");
+									}
+								}
+								_ => {}
+							}
+						}
+						_ => {}
+					}
+				}
+			}
+			else if self.paused {
 				match inp{
 					Input::Press(but) => {
 						match but{

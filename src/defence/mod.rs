@@ -29,7 +29,8 @@ use super::gfx_device_gl::command::CommandBuffer;
 use super::gfx_graphics::GfxGraphics;
 use super::find_folder;
 
-
+const HEALTH_BAR_HEIGHT: f64 = 8.0;
+const NOTIFICATION_TIME: f64 = 1.0;
 
 /// width and height are not related to the actual drawn size, they only define the size of the battle field, i.e. how many objects can fit on it.
 /// dx and dy store the amount of pixels that are drawn per width / height for the entire module and are updated whenever draw() is called
@@ -45,6 +46,7 @@ pub struct Defence {
 	tower_sprites: Vec<Texture<Resources>>,
 	enemies: Vec<Box<Enemy>>,
 	enemy_sprites: Vec<Texture<Resources>>,
+	kill_notifications: Vec<(f64,f64,f64)>,
 	projectiles: Vec<Projectile>,
 	projectile_sprites: Vec<Texture<Resources>>,
 	explosions: Vec<((f64, f64, f64), f64)>,
@@ -55,10 +57,10 @@ pub struct Defence {
 impl Defence {
 	/// width and height are not related to the actual drawn size, they only define the size of the battle field, i.e. how many objects can fit on it.
 	pub fn new (w: &PistonWindow, hp: u32, width: f64, height: f64, state: &GameState, config: &Rc<Settings>) -> Defence {
-		let controller = controller::Ctrl::new((width - STD_ENEMY_W)/2.0, 0.0);
+		let controller = controller::Ctrl::new(width/2.0, 0.0);
 		
 		let bf_height = height * BF_SHOP_SPLIT_RATIO;
-		let mut spm = JkmShortestPathMap::new( (width / 2.0, 0.0), (width / 2.0 , bf_height - STD_ENEMY_H ),(0.0, 0.0, width - STD_ENEMY_W, bf_height- STD_ENEMY_H) );
+		let mut spm = JkmShortestPathMap::new( ((width-STD_ENEMY_W) / 2.0, 0.0), ((width-STD_ENEMY_W) / 2.0 , bf_height - STD_ENEMY_H ),(0.0, 0.0, width - STD_ENEMY_W, bf_height- STD_ENEMY_H) );
 		spm.add_map_border();
 		
 		let enemies: Vec<Box<Enemy>> = Vec::new();
@@ -136,6 +138,7 @@ impl Defence {
 			tower_sprites: tower_sprites,
 			enemies: enemies,
 			enemy_sprites: enemy_sprites,
+			kill_notifications: Vec::new(),
 			projectiles: pros, 
 			projectile_sprites: projectile_sprites,
 			explosions: Vec::new(),
@@ -147,6 +150,7 @@ impl Defence {
 	pub fn on_update(&mut self, upd: UpdateArgs, state: &GameState, stats: &mut Statistics) {
 		
 		// animations
+			// explosions
 		let mut to_remove = Vec::new();
 		for (i, expl) in self.explosions.iter_mut().enumerate() {
 			expl.1 -= upd.dt;
@@ -156,6 +160,17 @@ impl Defence {
 		}
 		while let Some(i) = to_remove.pop() {
 			self.explosions.swap_remove(i);
+		}
+			// notifications
+		let mut to_remove = Vec::new();
+		for (i, notification) in self.kill_notifications.iter_mut().enumerate() {
+			notification.2 -= upd.dt;
+			if notification.2 <= 0.0 {
+				to_remove.push(i);
+			}
+		}
+		while let Some(i) = to_remove.pop() {
+			self.kill_notifications.swap_remove(i);
 		}
 		
 		// enemy creation
@@ -209,12 +224,13 @@ impl Defence {
 			else if e.is_dead() { 
 				to_remove.push(i); 
 				stats.add_unit_kill( e.score_value() );
+				let (x,y) = e.get_coordinates();
+				self.kill_notifications.push((x, y, NOTIFICATION_TIME));
 			}
 		}
 		while let Some(i) = to_remove.pop() {
 			self.enemies.swap_remove(i);
 		}
-		
 	}
 	pub fn on_click(&mut self, x: f64, y: f64, state: &GameState) -> Option<DefenceUserInteraction> {
 		if let Some(DefenceUserInteraction::BuyTower{x: w, y: h, tower_id}) = self.shop.on_click(x, y - BF_SHOP_SPLIT_RATIO * self.height * self.dy, state) {
@@ -299,6 +315,16 @@ impl Defence {
 			let x_scale = 2.0 * r * dx /(sprite_w as f64);
 			let y_scale = 2.0 * r * dy /(sprite_h as f64);
 			image(explosion, view.trans((x-r) * dx,(y-r) * dy).scale(x_scale, y_scale), g);
+		}
+		
+		// Kill notifications
+		for &(x,y,t) in self.kill_notifications.iter() {
+			let notification = &self.general_sprites[4];
+			let (sprite_w, sprite_h) = notification.get_size();
+			let x_scale = STD_ENEMY_W * dx /(sprite_w as f64);
+			let y_scale = STD_ENEMY_H * dy /(sprite_h as f64);
+			let q = 1.0 - t/NOTIFICATION_TIME;
+			image(notification, view.trans((x + STD_ENEMY_W/2.0 * q) * dx,(y - q * STD_ENEMY_H * dy) * dy).scale(x_scale, y_scale).zoom(t), g);
 		}
 		
 		// Life display

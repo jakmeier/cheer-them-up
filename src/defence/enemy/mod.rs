@@ -15,12 +15,18 @@ use std;
 use super::jkm_shortest_path_map::JkmShortestPathMap;
 use super::tower::Tower;
 use constants::*;
+use super::HEALTH_BAR_HEIGHT;
 
 pub mod basic_enemy;
 pub mod slow_enemy;
-pub mod fast_enemy;
+pub mod alien_enemy;
 pub mod aggressive_enemy;
-pub mod boss_enemy;
+pub mod alien_boss;
+pub mod devil_enemy;
+pub mod devil_boss;
+pub mod ghost_enemy;
+pub mod ghost_boss;
+pub mod troll;
 
 pub struct EnemyAttributes {
 	x: f64, y: f64,

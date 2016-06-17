@@ -1,11 +1,11 @@
-extern crate multy_task_lib;
+extern crate cheer_them_up;
 extern crate piston_window;
 
 use std::rc::Rc;
 
 use piston_window::*;
-use multy_task_lib::Game;
-use multy_task_lib::definitions::Settings;
+use cheer_them_up::Game;
+use cheer_them_up::definitions::Settings;
 
 fn main() {
 	let mut temp_conf = Settings::new();
@@ -16,7 +16,7 @@ fn main() {
 	let (screen_width, screen_height) = conf.get_screen_dimensions();
 	
 	let window: PistonWindow = WindowSettings::new(
-        "Multy Task",
+        "Cheer them up!",
         [screen_width, screen_height]
     )
     .exit_on_esc(true)

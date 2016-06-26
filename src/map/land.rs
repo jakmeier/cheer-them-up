@@ -636,7 +636,10 @@ impl Land {
 	pub fn sell(&mut self, s: &GameState) -> bool {
 		let result = self.bought;
 		self.bought = false;
-		if result {	self.refresh_buttons(s); }
+		if result {	
+			self.land_type = LandType::Empty;
+			self.refresh_buttons(s); 
+		}
 		result
 	}
 	pub fn concrete(&mut self, s: &GameState){		

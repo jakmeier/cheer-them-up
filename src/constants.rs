@@ -23,7 +23,7 @@ pub const EPS: f64 = 1.0/1048576.0;
 // Map
 pub const CONCRETE_PRICE: [u32;4] = [0,0,3,0];
 
-pub const IRON_FACTORY_PRICE: [u32;4] = [0,10,5,0];
+pub const IRON_FACTORY_PRICE: [u32;4] = [0,8,5,0];
 pub const IRON_FACTORY_UPGRADES: usize = 10;
 pub const IRON_FACTORY_UPGRADE_PRICE: [[u32;4]; IRON_FACTORY_UPGRADES] = 
 	[
@@ -34,9 +34,9 @@ pub const IRON_FACTORY_UPGRADE_PRICE: [[u32;4]; IRON_FACTORY_UPGRADES] =
 		[0,10,0,7],
 		[0,13,0,8],
 		[0,15,0,10],
-		[0,25,0,15],
-		[0,30,0,20],
-		[0,40,0,25],
+		[0,20,0,15],
+		[0,25,0,20],
+		[0,30,0,25],
 	];
 
 pub const UNIVERSITY_PRICE: [u32;4] = [2,2,2,2];
@@ -123,8 +123,8 @@ pub const ORACLE_RESEARCH_PRICE_LIST: [[u32;4]; ORACLE_RESEARCH_LEVELS] =
 		pub const ENEMY_ATTACK_SCALE: [f64; NUMBER_OF_ES] = [2.0,  3.0, 1.0,  2.5, 25.0,  2.0, 25.0, 0.0, 0.0,  50.0];
 		pub const ENEMY_ATTACK_RATIO: [f64; NUMBER_OF_ES] = [0.5,  1.0, 0.4,  0.5,  0.7,  0.8,  1.0, 1.0, 1.0,   2.0];
 		
-		pub const ENEMY_HEALTH: [f64; NUMBER_OF_ES] = 		[30.0, 60.0, 10.0, 50.0, 1000.0, 100.0, 1000.0, 100.0, 1000.0, 3000.0];
-		pub const ENEMY_HEALTH_SCALE: [f64; NUMBER_OF_ES] = [30.0, 45.0, 20.0, 50.0,  400.0,  25.0,  300.0, 20.0, 200.0, 500.0];
+		pub const ENEMY_HEALTH: [f64; NUMBER_OF_ES] = 		[30.0, 60.0, 25.0, 50.0, 1000.0, 100.0, 1300.0, 100.0, 1000.0, 3000.0];
+		pub const ENEMY_HEALTH_SCALE: [f64; NUMBER_OF_ES] = [30.0, 45.0, 25.0, 45.0,  500.0,  40.0,  600.0, 30.0, 250.0, 700.0];
 		
 		//Sprite constants	
 		

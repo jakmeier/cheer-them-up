@@ -25,6 +25,7 @@ pub trait Drawable {
 		view: math::Matrix2d,
 		draw_state: DrawState,
 		w: f64, h:f64,
+		help: bool,
 		)
 		;
 }

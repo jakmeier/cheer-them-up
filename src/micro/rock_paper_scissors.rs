@@ -21,6 +21,7 @@ pub struct GameObj{
 	rock_sprite: Texture<Resources>,
 	paper_sprite: Texture<Resources>,
 	unknown_sprite: Texture<Resources>,
+	help_sprite: Texture<Resources>,
 	t: u8,
 	font: Glyphs,
 	ai_activated: bool,
@@ -68,6 +69,15 @@ impl GameObj {
 		)
         .unwrap();
 		
+		let asd = img.join("asd.png");
+		let asd = Texture::from_path(
+			&mut *w.factory.borrow_mut(),
+			&asd,
+			Flip::None,
+			&TextureSettings::new()
+		)
+        .unwrap();
+		
 		let assets = find_folder::Search::ParentsThenKids(3, 3).for_folder("font").unwrap();
 		let ref font = assets.join("FiraSans-Regular.ttf");
 		let factory = w.factory.borrow().clone();
@@ -77,6 +87,7 @@ impl GameObj {
 			state_p1: 1, state_p2: 1, input_lock: false,
 			hide_p1: false, hide_p2: true,
 			scissors_sprite: scissors, rock_sprite: rock, paper_sprite: paper, unknown_sprite: unknown,
+			help_sprite: asd,
 			t:0,
 			font: glyphs,
 			ai_activated: true,
@@ -86,7 +97,7 @@ impl GameObj {
 }
 
 impl Drawable for GameObj {
-	fn draw (&mut self, g: &mut GfxGraphics<Resources, CommandBuffer>, view: math::Matrix2d, draw_state: DrawState, w: f64, h:f64)  { 
+	fn draw (&mut self, g: &mut GfxGraphics<Resources, CommandBuffer>, view: math::Matrix2d, draw_state: DrawState, w: f64, h:f64, help: bool)  { 
 		//Background, grey
 		let color = [0.7, 0.7, 0.7, 1.0];
 		rectangle(color, [0.0, 0.0, w, h], view, g);
@@ -159,6 +170,15 @@ impl Drawable for GameObj {
 			let mut scale = tool_height/(sprite_h as f64);
 			if scale > max_scale { scale = max_scale;}
 			image(&(self.paper_sprite), view.trans(x2, y).scale(scale,scale), g);
+		}
+		
+		// Help
+		if help {
+			let (sprite_w, sprite_h) = self.help_sprite.get_size();
+			let max_scale = tool_width/(sprite_w as f64);
+			let mut scale = tool_height/(sprite_h as f64);
+			if scale > max_scale { scale = max_scale;}
+			image(&(self.help_sprite), view.trans((w - sprite_w as f64 * scale) / 2.0, 0.0).scale(scale,scale), g);
 		}
 		
 		//time counter

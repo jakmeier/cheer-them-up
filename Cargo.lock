@@ -1,6 +1,6 @@
 [root]
 name = "cheer_them_up_game"
-version = "1.0.0"
+version = "1.0.1"
 dependencies = [
  "find_folder 0.3.0 (registry+https://github.com/rust-lang/crates.io-index)",
  "freetype-rs 0.5.0 (registry+https://github.com/rust-lang/crates.io-index)",

@@ -160,8 +160,8 @@ impl TicTacToeData {
 }
 
 impl Drawable for TicTacToeData {
-	#[allow(unused_variables)] //draw state
-	fn draw(&mut self, g: &mut GfxGraphics<Resources, CommandBuffer>, view: math::Matrix2d, draw_state: DrawState, w: f64, h:f64)
+	#[allow(unused_variables)] //draw state, help
+	fn draw(&mut self, g: &mut GfxGraphics<Resources, CommandBuffer>, view: math::Matrix2d, draw_state: DrawState, w: f64, h:f64, help: bool)
 	{
 		self.w = w;
 		self.h = h;
